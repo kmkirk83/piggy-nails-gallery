@@ -2,24 +2,80 @@ import { TRPCError } from "@trpc/server";
 import Stripe from "stripe";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { SUBSCRIPTION_PRODUCTS, type SubscriptionTier } from "./products";
+import {
+  subscriptionProducts,
+  oneTimePurchaseProducts,
+  aftercareKitProducts,
+  getProductById,
+} from "./nail-products";
 import { getUserStripeCustomerId, setUserStripeCustomerId, getUserOrders } from "./stripe-db";
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 /**
- * Stripe subscription router
+ * Stripe subscription and e-commerce router
  */
 export const stripeRouter = router({
   /**
-   * Create a checkout session for a subscription
+   * Get all available products
+   */
+  getProducts: publicProcedure
+    .input(
+      z.object({
+        category: z
+          .enum(["subscription", "one-time", "aftercare", "all"])
+          .optional(),
+        trending: z.boolean().optional(),
+      })
+    )
+    .query(({ input }) => {
+      let products: any[] = [];
+
+      if (!input.category || input.category === "all") {
+        products = [
+          ...subscriptionProducts,
+          ...oneTimePurchaseProducts,
+          ...aftercareKitProducts,
+        ];
+      } else if (input.category === "subscription") {
+        products = subscriptionProducts;
+      } else if (input.category === "one-time") {
+        products = oneTimePurchaseProducts;
+      } else if (input.category === "aftercare") {
+        products = aftercareKitProducts;
+      }
+
+      if (input.trending) {
+        products = products.filter((p) => p.trending);
+      }
+
+      return products;
+    }),
+
+  /**
+   * Get product details by ID
+   */
+  getProduct: publicProcedure.input(z.string()).query(({ input }) => {
+    const product = getProductById(input);
+    if (!product) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Product not found",
+      });
+    }
+    return product;
+  }),
+
+  /**
+   * Create a checkout session for subscription or one-time purchase
    */
   createCheckoutSession: protectedProcedure
     .input(
       z.object({
-        tier: z.enum(["monthly", "quarterly", "biannual", "annual"]),
+        productId: z.string(),
         origin: z.string().url(),
+        quantity: z.number().optional().default(1),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -32,9 +88,16 @@ export const stripeRouter = router({
           });
         }
 
+        const product = getProductById(input.productId);
+        if (!product) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Product not found",
+          });
+        }
+
         // Get or create Stripe customer
         let stripeCustomerId = await getUserStripeCustomerId(user.id);
-
         if (!stripeCustomerId) {
           const customer = await stripe.customers.create({
             email: user.email,
@@ -47,72 +110,86 @@ export const stripeRouter = router({
           await setUserStripeCustomerId(user.id, stripeCustomerId);
         }
 
-        // Get product details
-        const product = SUBSCRIPTION_PRODUCTS[input.tier as SubscriptionTier];
-        if (!product) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Invalid subscription tier",
+        // Create or get Stripe product and price
+        let stripeProductId = product.stripeProductId;
+        let stripePriceId = product.stripePriceId;
+
+        if (!stripeProductId) {
+          const stripeProduct = await stripe.products.create({
+            name: product.name,
+            description: product.description,
+            metadata: {
+              productId: product.id,
+              category: product.category,
+            },
           });
+          stripeProductId = stripeProduct.id;
         }
 
-        // Create or get price
-        // In production, you'd want to store price IDs in your database
-        // For now, we'll create prices dynamically
-        const productId = process.env.STRIPE_PRODUCT_ID;
-        if (!productId) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Stripe product ID not configured",
-          });
-        }
-
-        const prices = await stripe.prices.list({
-          product: productId,
-          limit: 100,
-        });
-
-        let priceId = prices.data.find(
-          (p: any) => p.recurring?.interval === product.interval &&
-                 p.recurring?.interval_count === product.intervalCount
-        )?.id;
-
-        if (!priceId) {
-          // Create a new price
-          const price = await stripe.prices.create({
-            product: productId,
+        if (!stripePriceId) {
+          const priceData: Stripe.PriceCreateParams = {
+            product: stripeProductId,
             unit_amount: product.price,
             currency: "usd",
-            recurring: {
-              interval: product.interval as "month" | "year",
-              interval_count: product.intervalCount,
+            metadata: {
+              productId: product.id,
             },
-            metadata: product.metadata,
-          });
-          priceId = price.id;
+          };
+
+          // Add recurring for subscriptions
+          if (product.category === "subscription") {
+            const recurringMap: Record<string, Stripe.PriceCreateParams.Recurring> = {
+              "starter-monthly": {
+                interval: "month",
+                interval_count: 1,
+              },
+              "trendsetter-quarterly": {
+                interval: "month",
+                interval_count: 3,
+              },
+              "vip-biannual": {
+                interval: "month",
+                interval_count: 6,
+              },
+              "elite-annual": {
+                interval: "year",
+                interval_count: 1,
+              },
+            };
+
+            if (recurringMap[product.id]) {
+              priceData.recurring = recurringMap[product.id];
+            }
+          }
+
+          const price = await stripe.prices.create(priceData);
+          stripePriceId = price.id;
         }
 
         // Create checkout session
-        const session = await stripe.checkout.sessions.create({
+        const sessionParams: Stripe.Checkout.SessionCreateParams = {
           customer: stripeCustomerId,
-          mode: "subscription",
+          mode: product.category === "subscription" ? "subscription" : "payment",
           payment_method_types: ["card"],
           line_items: [
             {
-              price: priceId,
-              quantity: 1,
+              price: stripePriceId,
+              quantity: input.quantity,
             },
           ],
           success_url: `${input.origin}/account?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${input.origin}/subscribe`,
+          cancel_url: `${input.origin}/shop`,
           customer_email: user.email,
           client_reference_id: user.id.toString(),
           metadata: {
             userId: user.id.toString(),
-            tier: input.tier,
+            productId: product.id,
+            category: product.category,
           },
           allow_promotion_codes: true,
-        });
+        };
+
+        const session = await stripe.checkout.sessions.create(sessionParams);
 
         return {
           sessionId: session.id,
@@ -194,7 +271,7 @@ export const stripeRouter = router({
 
       return {
         success: true,
-        canceledAt: new Date(subscription.canceled_at! * 1000),
+        canceledAt: new Date((subscription.canceled_at || 0) * 1000),
       };
     } catch (error) {
       console.error("[Stripe] Failed to cancel subscription:", error);
@@ -220,6 +297,39 @@ export const stripeRouter = router({
       });
     }
   }),
+
+  /**
+   * Get trending products
+   */
+  getTrendingProducts: publicProcedure.query(() => {
+    const trending = [
+      ...subscriptionProducts.filter((p) => p.trending),
+      ...oneTimePurchaseProducts.filter((p) => p.trending),
+      ...aftercareKitProducts.filter((p) => p.trending),
+    ];
+    return trending.slice(0, 8); // Return top 8 trending
+  }),
+
+  /**
+   * Search products
+   */
+  searchProducts: publicProcedure
+    .input(z.string())
+    .query(({ input }) => {
+      const query = input.toLowerCase();
+      const allProducts = [
+        ...subscriptionProducts,
+        ...oneTimePurchaseProducts,
+        ...aftercareKitProducts,
+      ];
+
+      return allProducts.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          p.subcategory?.toLowerCase().includes(query)
+      );
+    }),
 });
 
 export { stripe };

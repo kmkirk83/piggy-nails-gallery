@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight, Sparkles, Zap, Heart, Crown } from "lucide-react";
 import { useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
 
@@ -12,169 +12,183 @@ export default function Home() {
   const subscriptionTiers = [
     {
       id: "monthly",
-      name: "Keep it casual",
+      name: "Starter",
       duration: "1 Month",
-      price: "$34.50",
-      savings: "23%",
+      price: "$34.99",
+      savings: "Save 15%",
       description: "3 nail wrap kits + mini nail files",
+      icon: Sparkles,
     },
     {
       id: "quarterly",
-      name: "Friends with benefits",
+      name: "Trendsetter",
       duration: "3 Months",
-      price: "$99",
-      savings: "27%",
-      description: "3 nail wrap kits + mini nail files per month",
+      price: "$99.99",
+      savings: "Save 20%",
+      description: "3 nail wrap kits + mini nail files per month + exclusive access",
       featured: true,
+      icon: Zap,
     },
     {
       id: "biannual",
-      name: "Committed",
+      name: "VIP",
       duration: "6 Months",
-      price: "$189",
-      savings: "30%",
-      description: "3 nail wrap kits + mini nail files per month",
+      price: "$189.99",
+      savings: "Save 25%",
+      description: "4 nail wrap kits + premium files + exclusive designs",
+      icon: Heart,
     },
     {
       id: "annual",
-      name: "Ride or die",
+      name: "Elite",
       duration: "12 Months",
-      price: "$360",
-      savings: "33%",
-      description: "3 nail wrap kits + mini nail files per month",
+      price: "$360.00",
+      savings: "Save 30%",
+      description: "4 kits monthly + premium support + free aftercare kit",
+      icon: Crown,
+    },
+  ];
+
+  const featuredDesigns = [
+    {
+      id: 1,
+      name: "Chrome Dreams",
+      category: "Trending",
+      image: "https://via.placeholder.com/300x400?text=Chrome+Dreams",
+    },
+    {
+      id: 2,
+      name: "Minimalist Chic",
+      category: "Elegant",
+      image: "https://via.placeholder.com/300x400?text=Minimalist+Chic",
+    },
+    {
+      id: 3,
+      name: "Floral Garden",
+      category: "Nature",
+      image: "https://via.placeholder.com/300x400?text=Floral+Garden",
+    },
+    {
+      id: 4,
+      name: "Glitter Bomb",
+      category: "Sparkle",
+      image: "https://via.placeholder.com/300x400?text=Glitter+Bomb",
     },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
+      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-xl font-display font-bold text-foreground">Piggy Nails</h1>
+            <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Nail'd
+            </h1>
           </div>
           <div className="flex items-center gap-4">
             <button
               onClick={() => setLocation("/gallery")}
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-sm font-medium hover:text-accent transition-colors"
             >
-              Gallery
+              Shop
+            </button>
+            <button
+              onClick={() => setLocation("/subscribe")}
+              className="text-sm font-medium hover:text-accent transition-colors"
+            >
+              Subscribe
             </button>
             {isAuthenticated ? (
-              <button
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => setLocation("/account")}
-                className="text-sm font-medium text-foreground hover:text-primary transition-colors"
               >
                 Account
-              </button>
+              </Button>
             ) : (
-              <a href={getLoginUrl()}>
-                <Button size="sm" variant="default">
-                  Sign In
-                </Button>
-              </a>
+              <Button
+                size="sm"
+                onClick={() => (window.location.href = getLoginUrl())}
+              >
+                Sign In
+              </Button>
             )}
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="container py-20 md:py-32">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-5xl md:text-6xl font-display font-bold text-foreground leading-tight">
-                  Nail Art
-                  <span className="block text-primary">Every Month</span>
-                </h2>
-                <p className="text-lg text-muted-foreground max-w-md">
-                  Discover fresh, stunning nail designs delivered to your door. Subscribe to our monthly nail wrap collection and express yourself with every manicure.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  size="lg"
-                  onClick={() => setLocation("/subscribe")}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  Subscribe Now
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => setLocation("/gallery")}
-                >
-                  View Gallery
-                </Button>
-              </div>
+      <section className="py-20 md:py-32 bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="container">
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            <div className="inline-block px-4 py-2 rounded-full bg-accent/10 border border-accent/20">
+              <p className="text-sm font-medium text-accent">
+                ✨ Trending Designs Every Month
+              </p>
             </div>
-            <div className="relative h-96 md:h-full">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl" />
-              <img
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/aXImH6bF4dK2_18cf2855.jpg"
-                alt="Piggy Nails Studio"
-                className="w-full h-full object-cover rounded-3xl shadow-2xl"
-              />
+            <h2 className="text-5xl md:text-7xl font-display font-bold leading-tight">
+              Premium Nail Art,{" "}
+              <span className="bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
+                Delivered
+              </span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Curated collections of trending nail wraps inspired by TikTok and Instagram. Subscribe monthly or shop individual designs. Salon-quality nails at home.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <Button
+                size="lg"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                onClick={() => setLocation("/subscribe")}
+              >
+                Start Subscription
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => setLocation("/gallery")}
+              >
+                Shop One-Time
+              </Button>
             </div>
           </div>
         </div>
-
-        {/* Decorative gold line */}
-        <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 bg-secondary/5">
+      {/* Featured Designs */}
+      <section className="py-16 md:py-24">
         <div className="container">
-          <div className="text-center mb-16">
-            <h3 className="text-4xl font-display font-bold text-foreground mb-4">
-              How It Works
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-display font-bold mb-3">
+              This Month's Trending
             </h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Three simple steps to get your nails looking fabulous every month
+            <p className="text-muted-foreground text-lg">
+              Handpicked designs from the top creators
             </p>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "1",
-                title: "Choose Your Plan",
-                description: "Select a subscription that fits your style and budget",
-              },
-              {
-                step: "2",
-                title: "Receive Monthly",
-                description: "Get 3 nail wrap kits + files delivered each month",
-              },
-              {
-                step: "3",
-                title: "Enjoy & Repeat",
-                description: "Apply your wraps and enjoy beautiful nails all month long",
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="relative">
-                <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mb-4">
-                      <span className="text-2xl font-display font-bold text-accent">
-                        {item.step}
-                      </span>
-                    </div>
-                    <CardTitle className="text-xl">{item.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{item.description}</p>
-                  </CardContent>
-                </Card>
-                {idx < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-accent/30" />
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredDesigns.map((design) => (
+              <div
+                key={design.id}
+                className="group cursor-pointer"
+                onClick={() => setLocation("/gallery")}
+              >
+                <div className="relative overflow-hidden rounded-lg aspect-square mb-4 bg-secondary/10">
+                  <img
+                    src={design.image}
+                    alt={design.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                </div>
+                <h4 className="font-semibold text-foreground">{design.name}</h4>
+                <p className="text-sm text-accent">{design.category}</p>
               </div>
             ))}
           </div>
@@ -182,143 +196,144 @@ export default function Home() {
       </section>
 
       {/* Subscription Tiers */}
-      <section className="py-20">
+      <section className="py-16 md:py-24 bg-secondary/5">
         <div className="container">
-          <div className="text-center mb-16">
-            <h3 className="text-4xl font-display font-bold text-foreground mb-4">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-display font-bold mb-3">
               Choose Your Plan
             </h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              The longer you commit, the more you save. All plans include free shipping.
+            <p className="text-muted-foreground text-lg">
+              Flexible subscriptions that fit your style
             </p>
           </div>
-
-          <div className="grid md:grid-cols-4 gap-6">
-            {subscriptionTiers.map((tier) => (
-              <Card
-                key={tier.id}
-                className={`relative border transition-all ${
-                  tier.featured
-                    ? "border-accent shadow-lg scale-105"
-                    : "border-border/50 hover:border-accent/50"
-                }`}
-              >
-                {tier.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-sm font-medium">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                <CardHeader className="pt-8">
-                  <CardTitle className="text-lg">{tier.name}</CardTitle>
-                  <CardDescription>{tier.duration}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <div className="text-4xl font-display font-bold text-foreground">
-                      {tier.price}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {subscriptionTiers.map((tier) => {
+              const IconComponent = tier.icon;
+              return (
+                <Card
+                  key={tier.id}
+                  className={`relative transition-all ${
+                    tier.featured
+                      ? "ring-2 ring-accent scale-105 md:scale-110"
+                      : ""
+                  }`}
+                >
+                  {tier.featured && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-accent text-accent-foreground text-xs font-bold rounded-full">
+                      MOST POPULAR
                     </div>
-                    <p className="text-sm text-accent font-medium mt-2">
-                      Save {tier.savings}
+                  )}
+                  <CardHeader>
+                    <div className="flex items-center justify-between mb-2">
+                      <CardTitle className="text-xl">{tier.name}</CardTitle>
+                      <IconComponent className="w-5 h-5 text-accent" />
+                    </div>
+                    <CardDescription>{tier.duration}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <div className="text-3xl font-bold text-accent">
+                        {tier.price}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {tier.savings}
+                      </p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {tier.description}
                     </p>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{tier.description}</p>
-                  <Button
-                    className={`w-full ${
-                      tier.featured
-                        ? "bg-accent hover:bg-accent/90 text-accent-foreground"
-                        : "bg-primary hover:bg-primary/90 text-primary-foreground"
-                    }`}
-                    onClick={() => setLocation("/subscribe")}
-                  >
-                    Get Started
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    <Button
+                      className="w-full"
+                      variant={tier.featured ? "default" : "outline"}
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          window.location.href = getLoginUrl();
+                        } else {
+                          setLocation(`/checkout?tier=${tier.id}`);
+                        }
+                      }}
+                    >
+                      Get Started
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Featured Designs */}
-      <section className="py-20 bg-secondary/5">
+      {/* Why Nail'd */}
+      <section className="py-16 md:py-24">
         <div className="container">
-          <div className="text-center mb-16">
-            <h3 className="text-4xl font-display font-bold text-foreground mb-4">
-              Featured Designs
-            </h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Explore our curated collection of nail art designs
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                title: "Geometric Patterns",
-                image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg",
-              },
-              {
-                title: "Floral Designs",
-                image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg",
-              },
-              {
-                title: "Seasonal Collections",
-                image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/QFIFJu3FSsLE_c546cf86.jpg",
-              },
-            ].map((design, idx) => (
-              <div
-                key={idx}
-                className="group cursor-pointer overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all"
-                onClick={() => setLocation("/gallery")}
-              >
-                <div className="relative h-64 overflow-hidden bg-muted">
-                  <img
-                    src={design.image}
-                    alt={design.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h4 className="text-lg font-display font-bold text-white">
-                    {design.title}
-                  </h4>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => setLocation("/gallery")}
-            >
-              View All Designs
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
+          <h3 className="text-3xl md:text-4xl font-display font-bold text-center mb-12">
+            Why Choose Nail'd
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="border-0 bg-secondary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-accent" />
+                  Trending Designs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Curated collections updated monthly from top TikTok and Instagram creators
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-0 bg-secondary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-accent" />
+                  Premium Quality
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Salon-quality nail wraps with long-lasting wear and vibrant colors
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-0 bg-secondary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-accent" />
+                  Easy Application
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Simple DIY application with included files and aftercare kits available
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary/10 to-accent/10">
-        <div className="container text-center">
-          <h3 className="text-4xl font-display font-bold text-foreground mb-6">
-            Ready to Transform Your Nails?
+      <section className="py-16 md:py-24 bg-gradient-to-r from-primary/10 to-accent/10">
+        <div className="container text-center space-y-6">
+          <h3 className="text-3xl md:text-4xl font-display font-bold">
+            Ready to Nail It?
           </h3>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Join thousands of nail art enthusiasts who love receiving fresh designs every month.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Join thousands of nail art lovers getting trending designs delivered to their door
           </p>
           <Button
             size="lg"
             className="bg-accent hover:bg-accent/90 text-accent-foreground"
-            onClick={() => setLocation("/subscribe")}
+            onClick={() => {
+              if (!isAuthenticated) {
+                window.location.href = getLoginUrl();
+              } else {
+                setLocation("/subscribe");
+              }
+            }}
           >
-            Start Your Subscription
-            <ChevronRight className="w-4 h-4 ml-2" />
+            Start Your Subscription Today
           </Button>
         </div>
       </section>
@@ -326,67 +341,69 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border py-12 bg-background">
         <div className="container">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h4 className="font-display font-bold text-foreground mb-4">Piggy Nails</h4>
+              <h4 className="font-display font-bold mb-4">Nail'd</h4>
               <p className="text-sm text-muted-foreground">
-                Premium nail art subscriptions delivered monthly.
+                Premium trending nail art delivered monthly
               </p>
             </div>
             <div>
-              <h5 className="font-semibold text-foreground mb-4">Shop</h5>
+              <h5 className="font-semibold mb-4">Shop</h5>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <button
                     onClick={() => setLocation("/gallery")}
-                    className="hover:text-primary transition-colors"
+                    className="hover:text-accent transition-colors"
                   >
-                    Gallery
+                    Browse Designs
                   </button>
                 </li>
                 <li>
                   <button
-                    onClick={() => setLocation("/subscribe")}
-                    className="hover:text-primary transition-colors"
+                    onClick={() => setLocation("/gallery?category=trending")}
+                    className="hover:text-accent transition-colors"
                   >
-                    Subscribe
+                    Trending
                   </button>
                 </li>
               </ul>
             </div>
             <div>
-              <h5 className="font-semibold text-foreground mb-4">Support</h5>
+              <h5 className="font-semibold mb-4">Subscriptions</h5>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <a href="#" className="hover:text-primary transition-colors">
-                    FAQ
-                  </a>
+                  <button
+                    onClick={() => setLocation("/subscribe")}
+                    className="hover:text-accent transition-colors"
+                  >
+                    Plans
+                  </button>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-primary transition-colors">
-                    Contact
-                  </a>
+                  <button
+                    onClick={() => setLocation("/subscribe#faq")}
+                    className="hover:text-accent transition-colors"
+                  >
+                    FAQ
+                  </button>
                 </li>
               </ul>
             </div>
             <div>
-              <h5 className="font-semibold text-foreground mb-4">Follow</h5>
+              <h5 className="font-semibold mb-4">Support</h5>
               <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>Contact: hello@naild.com</li>
                 <li>
-                  <a href="#" className="hover:text-primary transition-colors">
-                    Instagram
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-primary transition-colors">
-                    TikTok
-                  </a>
+                  <button className="hover:text-accent transition-colors">
+                    Help Center
+                  </button>
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2026 Piggy Nails. All rights reserved.</p>
+            <p>&copy; 2026 Nail'd. All rights reserved. | Premium nail art delivered.</p>
           </div>
         </div>
       </footer>
