@@ -1,0 +1,173 @@
+{
+  "nailArtProducts": [
+    {
+      "id": 1,
+      "name": "Checkmate Nail Wraps",
+      "category": "Geometric",
+      "description": "Classic black and white checkmate pattern nail wraps",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg",
+      "price": 12.99
+    },
+    {
+      "id": 2,
+      "name": "Nail Art Design Showcase",
+      "category": "Mixed",
+      "description": "Collection of various nail art designs",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/I2ySVxCEnfxd_b7e53c20.jpg",
+      "price": 14.99
+    },
+    {
+      "id": 3,
+      "name": "Christmas Cutie Nail Art",
+      "category": "Seasonal",
+      "description": "Festive Christmas-themed nail art designs",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/M2tb20TzCWVP_5f03f32f.jpg",
+      "price": 13.99
+    },
+    {
+      "id": 4,
+      "name": "Fall Full Nail Wraps",
+      "category": "Seasonal",
+      "description": "Autumn-inspired full nail wrap stickers with fall colors",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/QFIFJu3FSsLE_c546cf86.jpg",
+      "price": 15.99
+    },
+    {
+      "id": 5,
+      "name": "Beautiful Nail Art Tutorial",
+      "category": "Mixed",
+      "description": "Collection of beautiful nail art designs and tutorials",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/QRfqOPbkeuVO_572e38f9.jpg",
+      "price": 12.99
+    },
+    {
+      "id": 6,
+      "name": "Cute Piggy Nail Art Kit",
+      "category": "Playful",
+      "description": "Adorable piggy-themed nail art decorations",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/UREkDhdJefLj_8d98a6c3.jpg",
+      "price": 11.99
+    },
+    {
+      "id": 7,
+      "name": "Piggy Nails Suite Studio",
+      "category": "Professional",
+      "description": "Professional nail salon showcase featuring premium designs",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/aXImH6bF4dK2_18cf2855.jpg",
+      "price": 16.99
+    },
+    {
+      "id": 8,
+      "name": "3D Blossom Nail Art",
+      "category": "Floral",
+      "description": "3D blossom-themed nail art with dimensional effects",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg",
+      "price": 14.99
+    },
+    {
+      "id": 9,
+      "name": "3D Heart Nail Art",
+      "category": "Romantic",
+      "description": "3D heart-shaped nail art with dimensional design",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg",
+      "price": 13.99
+    },
+    {
+      "id": 10,
+      "name": "Nail Polish Art Strips",
+      "category": "Classic",
+      "description": "Premium nail polish art strips for DIY manicures",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/oeGLK19nnivc_7338bdd9.jpg",
+      "price": 12.99
+    },
+    {
+      "id": 11,
+      "name": "Cute Piggy Decorations",
+      "category": "Playful",
+      "description": "Cute piggy-themed nail decorations for creative manicures",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/p33GPlzLAeMA_0237fd16.jpg",
+      "price": 10.99
+    },
+    {
+      "id": 12,
+      "name": "3D Blossom Collection",
+      "category": "Floral",
+      "description": "3D blossom nail art collection with premium finishes",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/qx6uSZMlysqb_8d98a6c3.jpg",
+      "price": 14.99
+    },
+    {
+      "id": 13,
+      "name": "20 Nails Design Collection",
+      "category": "Mixed",
+      "description": "Comprehensive collection of 20 different nail designs for 2024",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/ttlcrjsbzrAs_fe9e2adb.jpg",
+      "price": 18.99
+    },
+    {
+      "id": 14,
+      "name": "Professional Manicure Showcase",
+      "category": "Professional",
+      "description": "Professional manicure designs with premium finishes",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/U7n77pFiFcsP_350ce1ec.jpeg",
+      "price": 17.99
+    },
+    {
+      "id": 15,
+      "name": "Nail Photography Tips",
+      "category": "Educational",
+      "description": "Guide to improving nail art photography quality",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hF2sRpqm1l5l_3f03bcd2.png",
+      "price": 9.99
+    }
+  ],
+  "categories": [
+    "Geometric",
+    "Mixed",
+    "Seasonal",
+    "Playful",
+    "Professional",
+    "Floral",
+    "Romantic",
+    "Classic",
+    "Educational"
+  ],
+  "subscriptionTiers": [
+    {
+      "id": "monthly",
+      "name": "Keep it casual",
+      "duration": "1 Month",
+      "price": 34.50,
+      "savings": "23%",
+      "billingCycle": "every month",
+      "description": "3 nail wrap kits + mini nail files"
+    },
+    {
+      "id": "quarterly",
+      "name": "Friends with benefits",
+      "duration": "3 Months",
+      "price": 99.00,
+      "savings": "27%",
+      "billingCycle": "every 3 months",
+      "description": "3 nail wrap kits + mini nail files per month"
+    },
+    {
+      "id": "biannual",
+      "name": "Committed",
+      "duration": "6 Months",
+      "price": 189.00,
+      "savings": "30%",
+      "billingCycle": "every 6 months",
+      "description": "3 nail wrap kits + mini nail files per month"
+    },
+    {
+      "id": "annual",
+      "name": "Ride or die",
+      "duration": "12 Months",
+      "price": 360.00,
+      "savings": "33%",
+      "billingCycle": "every 12 months",
+      "description": "3 nail wrap kits + mini nail files per month"
+    }
+  ]
+}
