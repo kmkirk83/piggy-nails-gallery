@@ -11,6 +11,7 @@ import Checkout from "./pages/Checkout";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
 import Account from "./pages/Account";
+import Admin from "./pages/Admin";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -20,9 +21,10 @@ function Router() {
       <Route path={"/gallery"} component={Gallery} />
       <Route path={"/shop"} component={Shop} />
       <Route path={"/product/:productId"} component={ProductDetail} />
-      <Route path={"/account"} component={Account} />
-      <Route path={"/subscribe"} component={Subscribe} />
-      <Route path={"/checkout"} component={Checkout} />
+      <Route path="/account" component={Account} />
+      <Route path="/admin" component={Admin} />
+      <Route path="/subscribe" component={Subscribe} />
+      <Route path="/checkout" component={Checkout} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

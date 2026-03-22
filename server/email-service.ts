@@ -1,4 +1,5 @@
 import { notifyOwner } from "./_core/notification";
+import { sendEmail } from "./email-config";
 
 /**
  * Email notification service
