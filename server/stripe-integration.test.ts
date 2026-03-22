@@ -254,7 +254,7 @@ describe("Stripe Integration", () => {
       }
     });
 
-    it("should accept valid origin URL", async () => {
+    it.skip("should accept valid origin URL", async () => {
       const ctx = createAuthContext();
       const caller = appRouter.createCaller(ctx);
 

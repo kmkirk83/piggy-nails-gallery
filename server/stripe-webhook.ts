@@ -1,0 +1,262 @@
+import { Request, Response } from "express";
+import Stripe from "stripe";
+import { getDb } from "./db";
+import { stripe } from "./stripe-procedures";
+import { orders, subscriptions } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
+
+const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
+
+/**
+ * Handle Stripe webhook events
+ * This endpoint processes payment confirmations, subscription updates, and customer events
+ */
+export async function handleStripeWebhook(req: Request, res: Response) {
+  const sig = req.headers["stripe-signature"] as string;
+
+  if (!sig) {
+    console.error("[Webhook] Missing stripe-signature header");
+    return res.status(400).json({ error: "Missing stripe-signature header" });
+  }
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, WEBHOOK_SECRET);
+  } catch (err: any) {
+    console.error("[Webhook] Signature verification failed:", err.message);
+    return res.status(400).json({ error: `Webhook Error: ${err.message}` });
+  }
+
+  // Handle test events
+  if (event.id.startsWith("evt_test_")) {
+    console.log("[Webhook] Test event detected, returning verification response");
+    return res.json({ verified: true });
+  }
+
+  console.log(`[Webhook] Processing event: ${event.type} (${event.id})`);
+
+  try {
+    const db = await getDb();
+    if (!db) {
+      console.error("[Webhook] Database not available");
+      return res.status(500).json({ error: "Database unavailable" });
+    }
+
+    switch (event.type) {
+      case "checkout.session.completed":
+        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, db);
+        break;
+
+      case "payment_intent.succeeded":
+        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent, db);
+        break;
+
+      case "invoice.paid":
+        await handleInvoicePaid(event.data.object as Stripe.Invoice, db);
+        break;
+
+      case "customer.subscription.updated":
+        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription, db);
+        break;
+
+      case "customer.subscription.deleted":
+        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, db);
+        break;
+
+      case "charge.refunded":
+        await handleChargeRefunded(event.data.object as Stripe.Charge, db);
+        break;
+
+      default:
+        console.log(`[Webhook] Unhandled event type: ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error("[Webhook] Error processing event:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+/**
+ * Handle checkout.session.completed
+ * Creates an order record when checkout is completed
+ */
+async function handleCheckoutSessionCompleted(
+  session: Stripe.Checkout.Session,
+  db: any
+) {
+  try {
+    const clientReferenceId = session.client_reference_id;
+    const customerId = session.customer as string;
+    const sessionId = session.id;
+    const metadata = session.metadata || {};
+
+    if (!clientReferenceId) {
+      console.error("[Webhook] Missing client_reference_id in checkout session");
+      return;
+    }
+
+    const userId = parseInt(clientReferenceId);
+
+    // Check if this is a subscription or one-time payment
+    if (session.mode === "subscription") {
+      console.log(`[Webhook] Subscription created for user ${userId}`);
+      // Subscription is automatically created by Stripe
+      // We just need to log it
+    } else if (session.mode === "payment") {
+      // Create order record for one-time purchase
+      const orderData = {
+        userId,
+        stripeSessionId: sessionId,
+        stripeCustomerId: customerId,
+        status: "completed",
+        amount: session.amount_total || 0,
+        currency: session.currency || "usd",
+        productId: metadata.productId || null,
+        metadata: JSON.stringify(metadata),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Insert order (if table exists)
+      console.log(`[Webhook] Order created for user ${userId}:`, orderData);
+    }
+  } catch (error) {
+    console.error("[Webhook] Error handling checkout.session.completed:", error);
+    throw error;
+  }
+}
+
+/**
+ * Handle payment_intent.succeeded
+ * Confirms payment was successful
+ */
+async function handlePaymentIntentSucceeded(
+  paymentIntent: Stripe.PaymentIntent,
+  db: any
+) {
+  try {
+    const metadata = paymentIntent.metadata || {};
+    const userId = metadata.userId ? parseInt(metadata.userId) : null;
+
+    console.log(`[Webhook] Payment succeeded for user ${userId}:`, {
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      status: paymentIntent.status,
+    });
+
+    // Additional processing can be added here
+    // e.g., send confirmation email, update inventory, etc.
+  } catch (error) {
+    console.error("[Webhook] Error handling payment_intent.succeeded:", error);
+    throw error;
+  }
+}
+
+/**
+ * Handle invoice.paid
+ * Confirms subscription payment was successful
+ */
+async function handleInvoicePaid(invoice: Stripe.Invoice, db: any) {
+  try {
+    const customerId = invoice.customer as string;
+    const subscriptionId = (invoice as any).subscription as string;
+
+    console.log(`[Webhook] Invoice paid:`, {
+      invoiceId: invoice.id,
+      customerId,
+      subscriptionId,
+      amount: invoice.amount_paid,
+      currency: invoice.currency,
+    });
+
+    // Update subscription status if needed
+    if (subscriptionId) {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      console.log(`[Webhook] Subscription status: ${subscription.status}`);
+    }
+  } catch (error) {
+    console.error("[Webhook] Error handling invoice.paid:", error);
+    throw error;
+  }
+}
+
+/**
+ * Handle customer.subscription.updated
+ * Handles subscription changes (pause, resume, plan changes)
+ */
+async function handleSubscriptionUpdated(
+  subscription: Stripe.Subscription,
+  db: any
+) {
+  try {
+    const customerId = subscription.customer as string;
+    const subscriptionId = subscription.id;
+
+    console.log(`[Webhook] Subscription updated:`, {
+      subscriptionId,
+      customerId,
+      status: subscription.status,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+    });
+
+    // Log subscription state changes
+    if (subscription.cancel_at_period_end) {
+      console.log(`[Webhook] Subscription scheduled for cancellation at period end`);
+    }
+  } catch (error) {
+    console.error("[Webhook] Error handling customer.subscription.updated:", error);
+    throw error;
+  }
+}
+
+/**
+ * Handle customer.subscription.deleted
+ * Handles subscription cancellation
+ */
+async function handleSubscriptionDeleted(
+  subscription: Stripe.Subscription,
+  db: any
+) {
+  try {
+    const customerId = subscription.customer as string;
+    const subscriptionId = subscription.id;
+
+    console.log(`[Webhook] Subscription deleted:`, {
+      subscriptionId,
+      customerId,
+      canceledAt: new Date((subscription.canceled_at || 0) * 1000),
+    });
+
+    // Additional cleanup can be added here
+  } catch (error) {
+    console.error("[Webhook] Error handling customer.subscription.deleted:", error);
+    throw error;
+  }
+}
+
+/**
+ * Handle charge.refunded
+ * Handles refunds
+ */
+async function handleChargeRefunded(charge: Stripe.Charge, db: any) {
+  try {
+    console.log(`[Webhook] Charge refunded:`, {
+      chargeId: charge.id,
+      amount: charge.amount,
+      currency: charge.currency,
+      refunded: charge.refunded,
+      amountRefunded: charge.amount_refunded,
+    });
+
+    // Log refund for records
+  } catch (error) {
+    console.error("[Webhook] Error handling charge.refunded:", error);
+    throw error;
+  }
+}
+
+export default handleStripeWebhook;

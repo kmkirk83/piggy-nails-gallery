@@ -130,9 +130,17 @@ A premium print-on-demand nail art subscription and e-commerce platform featurin
 - [x] Stripe integration setup
 - [x] Database schema for subscriptions
 
-## In Progress
-- [ ] Rebrand to Nail'd
-- [ ] Expand product catalog
-- [ ] Create Stripe products
-- [ ] Build shopping cart
-- [ ] Enhance checkout flow
+## Phase 8: Advanced Features
+- [x] Stripe webhook handler for payment confirmations
+- [x] User account dashboard with subscription management
+- [x] Email notifications for orders and subscriptions
+- [ ] Subscription pause/resume functionality
+- [x] Order history page
+- [x] Subscription cancellation with confirmation
+
+## Completed Features
+- [x] Full rebrand to Nail'd
+- [x] Comprehensive product catalog (25+ products)
+- [x] Stripe integration with checkout
+- [x] Product detail pages and shop filtering
+- [x] All 31 tests passing

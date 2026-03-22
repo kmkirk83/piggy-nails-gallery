@@ -179,7 +179,6 @@ export const stripeRouter = router({
           ],
           success_url: `${input.origin}/account?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${input.origin}/shop`,
-          customer_email: user.email,
           client_reference_id: user.id.toString(),
           metadata: {
             userId: user.id.toString(),
