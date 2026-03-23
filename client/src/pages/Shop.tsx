@@ -6,6 +6,8 @@ import { ChevronLeft, ShoppingBag, Sparkles, Heart, Zap } from "lucide-react";
 import { useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
 
+
+
 interface Product {
   id: string;
   name: string;
@@ -15,6 +17,7 @@ interface Product {
   subcategory?: string;
   trending?: boolean;
   features?: string[];
+  imageUrl?: string;
 }
 
 const products: Product[] = [
@@ -28,6 +31,7 @@ const products: Product[] = [
     subcategory: "monthly",
     trending: true,
     features: ["3 kits", "Mini files", "Free shipping"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg",
   },
   {
     id: "trendsetter-quarterly",
@@ -38,6 +42,7 @@ const products: Product[] = [
     subcategory: "quarterly",
     trending: true,
     features: ["3 kits/month", "Exclusive access", "Early releases"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/I2ySVxCEnfxd_b7e53c20.jpg",
   },
   {
     id: "vip-biannual",
@@ -47,6 +52,7 @@ const products: Product[] = [
     category: "subscription",
     subcategory: "biannual",
     features: ["4 kits/month", "Premium files", "Priority support"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/M2tb20TzCWVP_5f03f32f.jpg",
   },
   {
     id: "elite-annual",
@@ -57,6 +63,7 @@ const products: Product[] = [
     subcategory: "annual",
     trending: true,
     features: ["4 kits/month", "Free aftercare", "Annual gift"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/QFIFJu3FSsLE_c546cf86.jpg",
   },
   // One-Time Purchases
   {
@@ -68,6 +75,7 @@ const products: Product[] = [
     subcategory: "trending",
     trending: true,
     features: ["20 wraps", "Metallic finish", "Includes file"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/QRfqOPbkeuVO_572e38f9.jpg",
   },
   {
     id: "minimalist-chic",
@@ -77,6 +85,7 @@ const products: Product[] = [
     category: "one-time",
     subcategory: "elegant",
     features: ["20 wraps", "Professional", "Includes file"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/UREkDhdJefLj_8d98a6c3.jpg",
   },
   {
     id: "floral-garden",
@@ -86,6 +95,7 @@ const products: Product[] = [
     category: "one-time",
     subcategory: "nature",
     features: ["20 wraps", "Floral design", "Includes file"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/aXImH6bF4dK2_18cf2855.jpg",
   },
   {
     id: "glitter-bomb",
@@ -96,6 +106,7 @@ const products: Product[] = [
     subcategory: "sparkle",
     trending: true,
     features: ["20 wraps", "Glitter finish", "Includes file"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg",
   },
   {
     id: "ombre-sunset",
@@ -106,6 +117,7 @@ const products: Product[] = [
     subcategory: "gradient",
     trending: true,
     features: ["20 wraps", "Gradient", "Includes file"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg",
   },
   {
     id: "geometric-pop",
@@ -116,6 +128,7 @@ const products: Product[] = [
     subcategory: "geometric",
     trending: true,
     features: ["20 wraps", "Geometric", "Includes file"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg",
   },
   {
     id: "3d-texture",
@@ -126,6 +139,7 @@ const products: Product[] = [
     subcategory: "textured",
     trending: true,
     features: ["20 wraps", "3D texture", "Includes file"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/I2ySVxCEnfxd_b7e53c20.jpg",
   },
   {
     id: "holographic-dreams",
@@ -136,6 +150,7 @@ const products: Product[] = [
     subcategory: "holographic",
     trending: true,
     features: ["20 wraps", "Holographic", "Includes file"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/M2tb20TzCWVP_5f03f32f.jpg",
   },
   // Aftercare Kits
   {
@@ -146,6 +161,7 @@ const products: Product[] = [
     category: "aftercare",
     subcategory: "basic",
     features: ["Base coat", "Top coat", "File"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/QRfqOPbkeuVO_572e38f9.jpg",
   },
   {
     id: "premium-aftercare",
@@ -156,6 +172,7 @@ const products: Product[] = [
     subcategory: "premium",
     trending: true,
     features: ["Base + top", "Remover", "Buffer", "File"],
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/UREkDhdJefLj_8d98a6c3.jpg",
   },
   {
     id: "deluxe-aftercare",
@@ -163,6 +180,7 @@ const products: Product[] = [
     description: "Ultimate care collection",
     price: 34.99,
     category: "aftercare",
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/aXImH6bF4dK2_18cf2855.jpg",
     subcategory: "deluxe",
     trending: true,
     features: ["Complete set", "Art pen", "Cuticle oil", "Premium"],
@@ -295,13 +313,25 @@ export default function Shop() {
                   key={product.id}
                   className="overflow-hidden hover:shadow-lg transition-shadow"
                 >
-                  <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
+                  <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative overflow-hidden">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : null}
                     {product.trending && (
                       <div className="absolute top-3 right-3 px-2 py-1 bg-accent text-accent-foreground text-xs font-bold rounded">
                         TRENDING
                       </div>
                     )}
-                    <Sparkles className="w-16 h-16 text-accent/30" />
+                    {!product.imageUrl && (
+                      <Sparkles className="w-16 h-16 text-accent/30" />
+                    )}
                   </div>
                   <CardHeader>
                     <CardTitle className="text-lg">{product.name}</CardTitle>
