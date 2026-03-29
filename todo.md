@@ -204,3 +204,19 @@ A premium print-on-demand nail art subscription and e-commerce platform featurin
 - [x] Implement search and filter functionality
 - [x] Update Gallery to display all 34 products
 - [x] Test product display and gallery functionality
+
+
+## Phase 17: Supplier Implementation & Launch
+- [ ] Week 1: Set up CJ Dropshipping account
+- [ ] Week 1: Curate 15 trending products
+- [ ] Week 1: Place test order (50-100 units)
+- [ ] Week 1: Contact HUIZI for samples & quotes
+- [ ] Week 2: Receive & evaluate test products
+- [ ] Week 2: Get customer feedback on products
+- [ ] Week 3: Design 3 subscription box tiers
+- [ ] Week 3: Create custom packaging
+- [ ] Week 4: Integrate suppliers into Nail'd platform
+- [ ] Week 4: Set up Stripe recurring billing
+- [ ] Week 5: Soft launch to 10-20 beta customers
+- [ ] Week 6-7: Scale to 30-50 orders
+- [ ] Week 8: Full public launch
