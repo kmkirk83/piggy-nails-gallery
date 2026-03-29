@@ -7,21 +7,18 @@
     "development": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk",
-        "nativeDirectory": "android"
+        "buildType": "apk"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk",
-        "nativeDirectory": "android"
+        "buildType": "apk"
       }
     },
     "production": {
       "android": {
-        "buildType": "app-bundle",
-        "nativeDirectory": "android"
+        "buildType": "app-bundle"
       }
     }
   }
