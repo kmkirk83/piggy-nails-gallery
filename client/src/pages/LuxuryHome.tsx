@@ -28,7 +28,7 @@ export default function LuxuryHome() {
     {
       id: 3,
       name: "3D Blossom Collection",
-      image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/qx6uSZMlysqb_8d98a6c3.jpg",
+      image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg",
       price: "$14.99",
     },
     {

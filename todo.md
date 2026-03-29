@@ -191,3 +191,7 @@ A premium print-on-demand nail art subscription and e-commerce platform featurin
 - [x] Update button colors to rose/pink
 - [x] Match Luxe Nails aesthetic exactly
 - [x] Test and verify design on live server
+
+
+## Phase 15: Bug Fixes
+- [x] Fix broken 3D Blossom Collection image
