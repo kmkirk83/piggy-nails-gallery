@@ -231,3 +231,12 @@ A premium print-on-demand nail art subscription and e-commerce platform featurin
 - [ ] Set up order fulfillment workflow
 - [ ] Create order management system
 - [ ] Test end-to-end subscription flow
+
+
+## Phase 19: Capacitor Android APK Build
+- [x] Build web app production bundle
+- [x] Sync web assets to Capacitor
+- [x] Create EAS Build setup guide
+- [x] Create Google Play Store submission guide
+- [ ] Execute EAS build command
+- [ ] Submit to Google Play Store
