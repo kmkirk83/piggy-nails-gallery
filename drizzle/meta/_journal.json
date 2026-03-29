@@ -15,6 +15,20 @@
       "when": 1774067668614,
       "tag": "0001_round_calypso",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1774312728965,
+      "tag": "0002_complete_preak",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1774312773894,
+      "tag": "0003_steady_mysterio",
+      "breakpoints": true
     }
   ]
 }

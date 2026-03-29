@@ -77,3 +77,139 @@ export const orders = mysqlTable("orders", {
 
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
+
+/**
+ * User-created nail art designs
+ */
+export const nailDesigns = mysqlTable("nailDesigns", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  imageUrl: text("imageUrl").notNull(),
+  templateId: int("templateId"), // Reference to template if created from template
+  uploadedImageUrl: text("uploadedImageUrl"), // User's uploaded image
+  designData: text("designData"), // JSON data for design (layers, colors, etc.)
+  isPublic: int("isPublic").default(1).notNull(), // 1 = public, 0 = private
+  viewCount: int("viewCount").default(0).notNull(),
+  averageRating: int("averageRating").default(0).notNull(), // 0-5 stars * 10 (0-50)
+  totalRatings: int("totalRatings").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NailDesign = typeof nailDesigns.$inferSelect;
+export type InsertNailDesign = typeof nailDesigns.$inferInsert;
+
+/**
+ * Design templates provided by designers
+ */
+export const designTemplates = mysqlTable("designTemplates", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  thumbnailUrl: text("thumbnailUrl"),
+  templateData: text("templateData").notNull(), // JSON for template structure
+  category: varchar("category", { length: 100 }),
+  difficulty: mysqlEnum("difficulty", ["easy", "medium", "hard"]).default("easy"),
+  createdBy: int("createdBy").notNull(), // Admin/designer user ID
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DesignTemplate = typeof designTemplates.$inferSelect;
+export type InsertDesignTemplate = typeof designTemplates.$inferInsert;
+
+/**
+ * Hand templates for nail art creation
+ */
+export const handTemplates = mysqlTable("handTemplates", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  imageUrl: text("imageUrl").notNull(),
+  skinTone: varchar("skinTone", { length: 50 }),
+  handOrientation: varchar("handOrientation", { length: 50 }).default("palm-up"),
+  nailBeds: text("nailBeds").notNull(),
+  isActive: int("isActive").default(1).notNull(),
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type HandTemplate = typeof handTemplates.$inferSelect;
+export type InsertHandTemplate = typeof handTemplates.$inferInsert;
+
+/**
+ * Ratings for nail designs
+ */
+export const designRatings = mysqlTable("designRatings", {
+  id: int("id").autoincrement().primaryKey(),
+  designId: int("designId").notNull(),
+  userId: int("userId").notNull(),
+  rating: int("rating").notNull(), // 1-5 stars
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DesignRating = typeof designRatings.$inferSelect;
+export type InsertDesignRating = typeof designRatings.$inferInsert;
+
+/**
+ * Comments on nail designs
+ */
+export const designComments = mysqlTable("designComments", {
+  id: int("id").autoincrement().primaryKey(),
+  designId: int("designId").notNull(),
+  userId: int("userId").notNull(),
+  content: text("content").notNull(),
+  likes: int("likes").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DesignComment = typeof designComments.$inferSelect;
+export type InsertDesignComment = typeof designComments.$inferInsert;
+
+/**
+ * Hashtags for designs
+ */
+export const designHashtags = mysqlTable("designHashtags", {
+  id: int("id").autoincrement().primaryKey(),
+  designId: int("designId").notNull(),
+  tag: varchar("tag", { length: 100 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DesignHashtag = typeof designHashtags.$inferSelect;
+export type InsertDesignHashtag = typeof designHashtags.$inferInsert;
+
+/**
+ * Product hashtags and categories
+ */
+export const productHashtags = mysqlTable("productHashtags", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: varchar("productId", { length: 255 }).notNull(),
+  tag: varchar("tag", { length: 100 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ProductHashtag = typeof productHashtags.$inferSelect;
+export type InsertProductHashtag = typeof productHashtags.$inferInsert;
+
+/**
+ * Product ratings
+ */
+export const productRatings = mysqlTable("productRatings", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: varchar("productId", { length: 255 }).notNull(),
+  userId: int("userId").notNull(),
+  rating: int("rating").notNull(), // 1-5 stars
+  review: text("review"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProductRating = typeof productRatings.$inferSelect;
+export type InsertProductRating = typeof productRatings.$inferInsert;
