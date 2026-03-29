@@ -11,24 +11,12 @@
     "preview": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease"
+        "buildType": "apk"
       }
     },
     "production": {
-      "distribution": "store",
       "android": {
-        "buildType": "aab",
-        "gradleCommand": ":app:bundleRelease"
-      }
-    }
-  },
-  "submit": {
-    "production": {
-      "android": {
-        "serviceAccount": "./google-play-key.json",
-        "track": "internal",
-        "changesNotSentForReview": false
+        "buildType": "app-bundle"
       }
     }
   }
