@@ -220,3 +220,14 @@ A premium print-on-demand nail art subscription and e-commerce platform featurin
 - [ ] Week 5: Soft launch to 10-20 beta customers
 - [ ] Week 6-7: Scale to 30-50 orders
 - [ ] Week 8: Full public launch
+
+
+## Phase 18: CJ Dropshipping Integration (Current)
+- [x] Curate 20 trending nail products from CJ
+- [x] Create product mapping spreadsheet with pricing
+- [x] Add products to Nail'd Gallery with search and filters
+- [x] Configure 3 subscription tiers (Starter $34.99, Trendsetter $49.99, VIP $69.99)
+- [ ] Create Stripe subscription products
+- [ ] Set up order fulfillment workflow
+- [ ] Create order management system
+- [ ] Test end-to-end subscription flow

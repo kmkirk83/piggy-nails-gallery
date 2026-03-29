@@ -2,9 +2,22 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronRight, Search, ShoppingCart, Star } from "lucide-react";
 import { useLocation } from "wouter";
 import LuxuryNav from "@/components/LuxuryNav";
+
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: string;
+  cost: number;
+  image: string;
+  description: string;
+  rating: number;
+  reviews: number;
+  supplier: string;
+}
 
 export default function Gallery() {
   const [, setLocation] = useLocation();
@@ -15,62 +28,49 @@ export default function Gallery() {
     document.title = "Nail'd Gallery - Premium Nail Art Collections";
   }, []);
 
-  const products = [
-    // Maximalist Collection
-    { id: 1, name: "Neon Blob Chrome", category: "maximalist", price: "$15.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Y2K inspired 3D chrome blobs" },
-    { id: 2, name: "Glitter Galaxy", category: "maximalist", price: "$14.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Deep space design with glitter stars" },
-    { id: 3, name: "Holographic Confetti", category: "maximalist", price: "$13.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Rainbow confetti with mirror finish" },
-    { id: 4, name: "3D Flower Explosion", category: "maximalist", price: "$16.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Hand-painted 3D floral designs" },
-    { id: 5, name: "Metallic Marble", category: "maximalist", price: "$14.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Swirled metallic gold and silver" },
-    { id: 6, name: "Neon Geometric", category: "maximalist", price: "$13.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Bold geometric shapes in neon" },
-    { id: 7, name: "Rainbow Ombre Wave", category: "maximalist", price: "$14.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Gradient from red to violet" },
-    { id: 8, name: "Jeweled Luxury", category: "maximalist", price: "$17.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Rhinestone-studded with gold accents" },
+  const products: Product[] = [
+    // CJ Dropshipping Products - Nail Wraps
+    { id: 1, name: "Holographic Nail Wraps Set", category: "wraps", price: "$9.99", cost: 4.00, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "20 strips, multiple holographic colors, trendy and eye-catching", rating: 4.8, reviews: 342, supplier: "CJ Dropshipping" },
+    { id: 2, name: "Chrome Mirror Nail Wraps", category: "wraps", price: "$8.99", cost: 3.50, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Metallic mirror finish, Instagram-worthy, premium feel", rating: 4.7, reviews: 287, supplier: "CJ Dropshipping" },
+    { id: 3, name: "Marble Pattern Nail Wraps", category: "wraps", price: "$9.49", cost: 3.80, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Aesthetic marble patterns, sophisticated and timeless", rating: 4.6, reviews: 215, supplier: "CJ Dropshipping" },
+    { id: 4, name: "Glitter Gradient Nail Wraps", category: "wraps", price: "$10.99", cost: 4.20, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Sparkly gradient effect, premium luxury feel", rating: 4.9, reviews: 398, supplier: "CJ Dropshipping" },
 
-    // Coquette Collection
-    { id: 9, name: "Soft Pink Bows", category: "coquette", price: "$12.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Pastel pink with bow designs" },
-    { id: 10, name: "Blush Hearts", category: "coquette", price: "$12.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Nude with rose gold hearts" },
-    { id: 11, name: "Romantic Lace", category: "coquette", price: "$13.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "White lace on soft pink" },
-    { id: 12, name: "Pearl Princess", category: "coquette", price: "$14.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Ivory with pearl embellishments" },
-    { id: 13, name: "Rose Gold Romance", category: "coquette", price: "$13.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Champagne with rose gold foil" },
-    { id: 14, name: "Soft Lavender Dreams", category: "coquette", price: "$12.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Lavender gradient with stars" },
-    { id: 15, name: "Cream & Roses", category: "coquette", price: "$14.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Cream with hand-painted roses" },
+    // Press-On Nails
+    { id: 5, name: "Press-On Nails Coffin", category: "press-ons", price: "$8.99", cost: 3.00, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "24 pieces, multiple sizes, coffin shape, trending style", rating: 4.8, reviews: 456, supplier: "CJ Dropshipping" },
+    { id: 6, name: "Press-On Nails Almond", category: "press-ons", price: "$7.99", cost: 2.80, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Natural almond shape, versatile for any occasion", rating: 4.7, reviews: 389, supplier: "CJ Dropshipping" },
+    { id: 7, name: "Press-On Nails Stiletto", category: "press-ons", price: "$9.49", cost: 3.20, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Bold stiletto shape, statement-making style", rating: 4.6, reviews: 267, supplier: "CJ Dropshipping" },
 
-    // Chrome & Metallic Collection
-    { id: 16, name: "Silver Chrome Mirror", category: "chrome", price: "$15.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Full mirror chrome in silver" },
-    { id: 17, name: "Gold Foil Luxury", category: "chrome", price: "$14.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Gold metallic with geometric lines" },
-    { id: 18, name: "Copper Sunset", category: "chrome", price: "$15.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Copper chrome with rose gold gradient" },
-    { id: 19, name: "Holographic Chrome", category: "chrome", price: "$16.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Color-shifting chrome" },
-    { id: 20, name: "Matte Chrome Black", category: "chrome", price: "$14.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Sophisticated matte black chrome" },
+    // Gel Kits
+    { id: 8, name: "Gel Nail Kit with LED Lamp", category: "gel-kits", price: "$19.99", cost: 8.50, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Complete kit with LED lamp, gel polish, and tools", rating: 4.9, reviews: 523, supplier: "CJ Dropshipping" },
+    { id: 9, name: "Gel Polish Set 12 Colors", category: "gel-kits", price: "$14.99", cost: 6.00, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Professional quality gel polish, 12 trending colors", rating: 4.8, reviews: 412, supplier: "CJ Dropshipping" },
 
-    // Minimalist & Elegant Collection
-    { id: 21, name: "Negative Space French", category: "minimalist", price: "$11.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Modern French manicure" },
-    { id: 22, name: "Micro Floral", category: "minimalist", price: "$12.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Tiny flowers on nude base" },
-    { id: 23, name: "Soft Aura", category: "minimalist", price: "$11.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Barely-there with glow effect" },
-    { id: 24, name: "Neutral Cat Eye", category: "minimalist", price: "$12.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Nude with metallic line" },
-    { id: 25, name: "Minimalist Stripes", category: "minimalist", price: "$11.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Clean white and nude stripes" },
-    { id: 26, name: "Subtle Metallic Accent", category: "minimalist", price: "$12.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Nude with gold accent line" },
+    // Accessories
+    { id: 10, name: "Nail Art Rhinestones Mix", category: "accessories", price: "$5.99", cost: 2.00, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "1000+ stones, multiple sizes and colors for nail art", rating: 4.7, reviews: 298, supplier: "CJ Dropshipping" },
+    { id: 11, name: "Nail Art Decals Stickers", category: "accessories", price: "$4.99", cost: 1.50, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "50+ designs, waterslide decals for easy application", rating: 4.6, reviews: 234, supplier: "CJ Dropshipping" },
+    { id: 12, name: "Manicure Tool Kit 12pcs", category: "accessories", price: "$7.99", cost: 2.50, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Professional 12-piece manicure tool set", rating: 4.8, reviews: 367, supplier: "CJ Dropshipping" },
+    { id: 13, name: "Nail Buffer & File Set", category: "accessories", price: "$6.99", cost: 2.20, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "5-in-1 professional nail buffer and file set", rating: 4.7, reviews: 278, supplier: "CJ Dropshipping" },
+    { id: 14, name: "Nail Sticker Sheets", category: "accessories", price: "$3.99", cost: 1.00, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "30+ designs, easy to apply nail stickers", rating: 4.5, reviews: 201, supplier: "CJ Dropshipping" },
 
-    // Trendy Patterns Collection
-    { id: 27, name: "Preppy Plaid", category: "patterns", price: "$13.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Classic navy and white plaid" },
-    { id: 28, name: "Gingham Glow", category: "patterns", price: "$12.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Checkered in soft pastels" },
-    { id: 29, name: "Tweed Texture", category: "patterns", price: "$14.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Chanel-inspired tweed" },
-    { id: 30, name: "Blooming Botanicals", category: "patterns", price: "$13.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Spring floral with green leaves" },
-    { id: 31, name: "Y2K Butterfly", category: "patterns", price: "$14.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Colorful retro butterflies" },
-    { id: 32, name: "Sunset Gradient", category: "patterns", price: "$13.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Orange to pink to purple" },
+    // Care Products
+    { id: 15, name: "Cuticle Oil Pen", category: "care", price: "$5.99", cost: 1.80, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Nourishing cuticle oil, portable pen applicator", rating: 4.7, reviews: 189, supplier: "CJ Dropshipping" },
+    { id: 16, name: "Nail Polish Remover Bottle", category: "care", price: "$3.99", cost: 1.20, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Acetone-free, gentle nail polish remover", rating: 4.6, reviews: 156, supplier: "CJ Dropshipping" },
+    { id: 17, name: "Base Coat & Top Coat Duo", category: "care", price: "$7.99", cost: 2.50, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Essential base and top coat for gel nails", rating: 4.8, reviews: 345, supplier: "CJ Dropshipping" },
 
-    // Premium Collection
-    { id: 33, name: "Hand-Painted Artisan", category: "premium", price: "$19.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Custom hand-painted nail art" },
-    { id: 34, name: "3D Embellished Luxury", category: "premium", price: "$21.99", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Premium 3D with Swarovski crystals" },
+    // Equipment & Supplies
+    { id: 18, name: "UV LED Nail Lamp 48W", category: "equipment", price: "$29.99", cost: 12.00, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg", description: "Professional 48W UV LED lamp, fast curing, auto-timer", rating: 4.9, reviews: 612, supplier: "CJ Dropshipping" },
+    { id: 19, name: "Acrylic Powder Set 5 Colors", category: "supplies", price: "$11.99", cost: 4.50, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg", description: "Professional grade acrylic powder, 5 trending colors", rating: 4.7, reviews: 289, supplier: "CJ Dropshipping" },
+    { id: 20, name: "Nail Glue & Adhesive", category: "supplies", price: "$4.99", cost: 1.50, image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg", description: "Strong hold, long-lasting nail glue and adhesive", rating: 4.6, reviews: 267, supplier: "CJ Dropshipping" },
   ];
 
   const categories = [
-    { id: "all", label: "All Collections" },
-    { id: "maximalist", label: "Maximalist" },
-    { id: "coquette", label: "Coquette" },
-    { id: "chrome", label: "Chrome & Metallic" },
-    { id: "minimalist", label: "Minimalist" },
-    { id: "patterns", label: "Patterns" },
-    { id: "premium", label: "Premium" },
+    { id: "all", label: "All Products" },
+    { id: "wraps", label: "Nail Wraps" },
+    { id: "press-ons", label: "Press-On Nails" },
+    { id: "gel-kits", label: "Gel Kits" },
+    { id: "accessories", label: "Accessories" },
+    { id: "care", label: "Care" },
+    { id: "equipment", label: "Equipment" },
+    { id: "supplies", label: "Supplies" },
   ];
 
   const filteredProducts = products.filter((product) => {
@@ -88,10 +88,10 @@ export default function Gallery() {
       <section className="pt-32 pb-16 px-6 bg-background border-b border-accent/10">
         <div className="container">
           <h1 className="text-5xl md:text-6xl font-display font-bold text-foreground mb-4">
-            Our Collections
+            Shop Our Collection
           </h1>
           <p className="text-lg text-foreground/70 max-w-2xl">
-            Discover {products.length}+ trending nail art designs inspired by Instagram and TikTok.
+            Discover {products.length} premium nail products from CJ Dropshipping. Trending designs, professional quality, fast shipping.
           </p>
         </div>
       </section>
@@ -103,7 +103,7 @@ export default function Gallery() {
           <div className="relative">
             <Search className="absolute left-4 top-3.5 w-5 h-5 text-foreground/50" />
             <Input
-              placeholder="Search designs..."
+              placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-12 py-3 bg-card border-accent/20 text-foreground placeholder:text-foreground/50"
@@ -126,7 +126,7 @@ export default function Gallery() {
 
           {/* Results Count */}
           <p className="text-sm text-foreground/60">
-            Showing {filteredProducts.length} of {products.length} designs
+            Showing {filteredProducts.length} of {products.length} products
           </p>
         </div>
       </section>
@@ -140,13 +140,15 @@ export default function Gallery() {
                 <Card
                   key={product.id}
                   className="group overflow-hidden bg-card/50 border-accent/20 hover:border-accent/50 transition-all cursor-pointer"
-                  onClick={() => setLocation(`/product/${product.id}`)}
                 >
                   <div className="aspect-square overflow-hidden bg-muted">
                     <img
                       src={product.image}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://via.placeholder.com/300x300?text=' + encodeURIComponent(product.name);
+                      }}
                     />
                   </div>
                   <div className="p-6 space-y-3">
@@ -154,38 +156,48 @@ export default function Gallery() {
                       <p className="text-xs text-accent/70 uppercase tracking-wider mb-1">
                         {product.category}
                       </p>
-                      <h3 className="font-display text-lg text-foreground font-semibold">
+                      <h3 className="font-display text-lg text-foreground font-semibold line-clamp-2">
                         {product.name}
                       </h3>
                     </div>
-                    <p className="text-sm text-foreground/60">{product.description}</p>
+                    <p className="text-sm text-foreground/60 line-clamp-2">{product.description}</p>
+                    
+                    {/* Rating */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex text-yellow-400">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-3 h-3 ${i < Math.floor(product.rating) ? 'fill-current' : 'fill-gray-400'}`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs text-foreground/50">
+                        {product.rating} ({product.reviews})
+                      </span>
+                    </div>
+
                     <div className="flex items-center justify-between pt-4 border-t border-accent/10">
-                      <p className="text-accent font-semibold text-lg">{product.price}</p>
-                      <Button
-                        size="sm"
-                        className="bg-accent hover:bg-accent/90 text-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setLocation("/subscribe");
-                        }}
-                      >
-                        Add to Cart
-                        <ChevronRight className="w-4 h-4 ml-1" />
-                      </Button>
+                      <p className="text-accent font-semibold text-lg">
+                        {product.price}
+                      </p>
+                      <button className="bg-accent hover:bg-accent/90 text-foreground p-2 rounded-lg transition-colors">
+                        <ShoppingCart className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </Card>
               ))}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <p className="text-lg text-foreground/60">No designs found matching your search.</p>
+            <div className="text-center py-12">
+              <p className="text-foreground/60 text-lg mb-4">No products found matching your search.</p>
               <Button
                 onClick={() => {
-                  setSearchTerm("");
-                  setSelectedCategory("all");
+                  setSearchTerm('');
+                  setSelectedCategory('all');
                 }}
-                className="mt-6 bg-accent hover:bg-accent/90 text-foreground"
+                variant="outline"
               >
                 Clear Filters
               </Button>
@@ -193,35 +205,6 @@ export default function Gallery() {
           )}
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-6 bg-background border-t border-accent/10">
-        <div className="container max-w-3xl mx-auto text-center space-y-8">
-          <div className="space-y-4">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground">
-              Can't Find Your Perfect Design?
-            </h2>
-            <p className="text-lg text-foreground/70">
-              Use our Design Studio to create custom nail art exactly how you want it.
-            </p>
-          </div>
-          <Button
-            size="lg"
-            onClick={() => setLocation("/studio")}
-            className="bg-accent hover:bg-accent/90 text-foreground font-display text-lg px-12 py-6 rounded-sm"
-          >
-            Create Custom Design
-            <ChevronRight className="w-5 h-5 ml-2" />
-          </Button>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-accent/10 py-12 px-6 bg-background">
-        <div className="container text-center text-foreground/60 text-sm">
-          <p>&copy; 2026 Nail'd. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -11,8 +11,8 @@ export default function LuxuryNav() {
 
   const navItems = [
     { label: "Shop", path: "/gallery" },
+    { label: "Subscriptions", path: "/subscriptions" },
     { label: "Design Studio", path: "/studio" },
-    { label: "Subscribe", path: "/subscribe" },
     { label: "Account", path: "/account", auth: true },
   ];
 

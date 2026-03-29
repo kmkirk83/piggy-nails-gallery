@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/LuxuryHome";
 import Gallery from "./pages/Gallery";
 import Subscribe from "./pages/Subscribe";
+import Subscriptions from "./pages/Subscriptions";
 import Checkout from "./pages/Checkout";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/account" component={Account} />
       <Route path="/admin" component={Admin} />
       <Route path="/subscribe" component={Subscribe} />
+      <Route path="/subscriptions" component={Subscriptions} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/studio" component={Studio} />
       <Route path={"/404"} component={NotFound} />
