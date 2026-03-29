@@ -48,40 +48,40 @@
 }
 
 :root {
-  /* Luxury Black & Gold Color Palette */
-  --primary: oklch(0.9 0.12 60);     /* Luxe gold */
-  --primary-foreground: oklch(0.1 0.01 0);
-  --sidebar-primary: oklch(0.85 0.15 60);
+  /* Luxe Nails Style - Dark Charcoal & Rose Pink */
+  --primary: oklch(0.75 0.15 340);     /* Rose/Mauve pink */
+  --primary-foreground: oklch(0.95 0.01 0);
+  --sidebar-primary: oklch(0.7 0.18 340);
   --sidebar-primary-foreground: oklch(0.95 0 0);
-  --chart-1: oklch(0.9 0.12 60);
-  --chart-2: oklch(0.85 0.1 50);
-  --chart-3: oklch(0.8 0.12 40);
-  --chart-4: oklch(0.75 0.14 30);
-  --chart-5: oklch(0.7 0.16 20);
+  --chart-1: oklch(0.75 0.15 340);
+  --chart-2: oklch(0.7 0.15 330);
+  --chart-3: oklch(0.65 0.15 320);
+  --chart-4: oklch(0.6 0.15 310);
+  --chart-5: oklch(0.55 0.15 300);
   --radius: 0.5rem;
-  --background: oklch(0.08 0.01 0);     /* Deep black */
-  --foreground: oklch(0.95 0.01 0);      /* Off-white */
-  --card: oklch(0.12 0.01 0);            /* Dark charcoal */
+  --background: oklch(0.18 0.02 280);     /* Dark charcoal with slight blue tint */
+  --foreground: oklch(0.95 0.01 0);       /* Off-white */
+  --card: oklch(0.22 0.02 280);           /* Slightly lighter charcoal */
   --card-foreground: oklch(0.95 0.01 0);
-  --popover: oklch(0.12 0.01 0);
+  --popover: oklch(0.22 0.02 280);
   --popover-foreground: oklch(0.95 0.01 0);
-  --secondary: oklch(0.9 0.12 60);       /* Luxe gold */
-  --secondary-foreground: oklch(0.1 0.01 0);
-  --muted: oklch(0.25 0.01 0);           /* Dark gray */
-  --muted-foreground: oklch(0.7 0.01 0);
-  --accent: oklch(0.9 0.12 60);          /* Luxe gold */
-  --accent-foreground: oklch(0.1 0.01 0);
+  --secondary: oklch(0.75 0.15 340);      /* Rose pink */
+  --secondary-foreground: oklch(0.95 0.01 0);
+  --muted: oklch(0.35 0.02 280);          /* Medium gray */
+  --muted-foreground: oklch(0.75 0.01 0);
+  --accent: oklch(0.75 0.15 340);         /* Rose pink */
+  --accent-foreground: oklch(0.95 0.01 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.2 0.01 0);           /* Dark border */
-  --input: oklch(0.15 0.01 0);
-  --ring: oklch(0.9 0.12 60);            /* Gold ring */
-  --sidebar: oklch(0.1 0.01 0);
+  --border: oklch(0.3 0.02 280);          /* Dark border */
+  --input: oklch(0.25 0.02 280);
+  --ring: oklch(0.75 0.15 340);           /* Pink ring */
+  --sidebar: oklch(0.18 0.02 280);
   --sidebar-foreground: oklch(0.95 0.01 0);
-  --sidebar-accent: oklch(0.9 0.12 60);
+  --sidebar-accent: oklch(0.75 0.15 340);
   --sidebar-accent-foreground: oklch(0.95 0 0);
-  --sidebar-border: oklch(0.2 0.01 0);
-  --sidebar-ring: oklch(0.9 0.12 60);
+  --sidebar-border: oklch(0.3 0.02 280);
+  --sidebar-ring: oklch(0.75 0.15 340);
 }
 
 .dark {

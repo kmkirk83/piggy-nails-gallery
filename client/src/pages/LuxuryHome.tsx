@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Star } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 import LuxuryNav from "@/components/LuxuryNav";
 
@@ -39,78 +39,62 @@ export default function LuxuryHome() {
     },
   ];
 
-  const subscriptionTiers = [
-    {
-      name: "Starter",
-      price: "$34.99",
-      period: "Monthly",
-      items: ["3 nail wrap kits", "Mini nail files", "Exclusive designs"],
-    },
-    {
-      name: "Trendsetter",
-      price: "$99.99",
-      period: "Quarterly",
-      items: ["3 kits per month", "Premium files", "Exclusive access"],
-      featured: true,
-    },
-    {
-      name: "VIP",
-      price: "$189.99",
-      period: "6 Months",
-      items: ["4 kits monthly", "Premium support", "Free aftercare kit"],
-    },
-    {
-      name: "Elite",
-      price: "$360.00",
-      period: "Yearly",
-      items: ["4 kits monthly", "VIP support", "Exclusive events"],
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-background">
       <LuxuryNav />
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="container max-w-4xl mx-auto text-center space-y-8">
-          <div className="space-y-4">
+      {/* Hero Section with Full-Screen Image Background */}
+      <section 
+        className="relative h-screen pt-32 flex items-center justify-start overflow-hidden"
+        style={{
+          backgroundImage: `url('https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center right',
+          backgroundAttachment: 'fixed',
+        }}
+      >
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-transparent"></div>
+        
+        {/* Hero Content */}
+        <div className="container relative z-10 max-w-2xl space-y-8">
+          <div className="space-y-6">
             <p className="text-accent font-display text-lg tracking-widest uppercase">
               Luxury Nail Art
             </p>
             <h1 className="text-6xl md:text-7xl font-display font-bold text-foreground leading-tight">
-              Salon Quality.
+              Beyond
               <br />
-              <span className="text-accent">At Home.</span>
+              <span className="italic">Salon.</span>
             </h1>
-            <p className="text-xl text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-              Curated collections of trending nail wraps inspired by luxury fashion. Subscribe monthly or shop individual designs.
+            <p className="text-xl text-foreground/80 max-w-xl leading-relaxed">
+              Engineered for 18-day wear. Hand-painted aesthetics. The world's first truly sustainable luxury press-on.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+          <div className="flex flex-col sm:flex-row gap-4 pt-8">
             <Button
               size="lg"
-              onClick={() => setLocation("/subscribe")}
-              className="bg-accent hover:bg-accent/90 text-background font-display text-lg px-8 py-6 rounded-sm"
+              onClick={() => setLocation("/gallery")}
+              className="bg-white hover:bg-white/90 text-background font-display text-lg px-8 py-6 rounded-sm font-semibold"
             >
-              Subscribe Now
+              Shop The Drop
               <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
             <Button
               size="lg"
               variant="outline"
-              onClick={() => setLocation("/gallery")}
-              className="border-accent text-accent hover:bg-accent/10 font-display text-lg px-8 py-6 rounded-sm"
+              onClick={() => setLocation("/studio")}
+              className="border-foreground/30 text-foreground hover:bg-foreground/10 font-display text-lg px-8 py-6 rounded-sm"
             >
-              Shop Designs
+              Design Studio
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Featured Designs */}
-      <section className="py-20 px-6 border-t border-accent/10">
+      {/* Featured Collections */}
+      <section className="py-20 px-6 bg-background border-t border-accent/10">
         <div className="container">
           <div className="text-center mb-16">
             <p className="text-accent font-display text-sm tracking-widest uppercase mb-2">
@@ -125,7 +109,7 @@ export default function LuxuryHome() {
             {featuredDesigns.map((design) => (
               <Card
                 key={design.id}
-                className="group overflow-hidden bg-card/50 border-accent/10 hover:border-accent/30 transition-all cursor-pointer"
+                className="group overflow-hidden bg-card/50 border-accent/20 hover:border-accent/50 transition-all cursor-pointer"
                 onClick={() => setLocation("/gallery")}
               >
                 <div className="aspect-square overflow-hidden bg-muted">
@@ -147,74 +131,52 @@ export default function LuxuryHome() {
         </div>
       </section>
 
-      {/* Subscription Tiers */}
-      <section className="py-20 px-6 border-t border-accent/10">
+      {/* The Feed Section */}
+      <section className="py-20 px-6 bg-background border-t border-accent/10">
         <div className="container">
-          <div className="text-center mb-16">
-            <p className="text-accent font-display text-sm tracking-widest uppercase mb-2">
-              Subscription Plans
-            </p>
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground">
-              Choose Your Plan
-            </h2>
-          </div>
+          <div className="space-y-8">
+            <div>
+              <p className="text-accent font-display text-sm tracking-widest uppercase mb-4">
+                Shop Our Socials
+              </p>
+              <h2 className="text-5xl md:text-6xl font-display font-bold text-foreground leading-tight">
+                The
+                <br />
+                Feed
+              </h2>
+            </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {subscriptionTiers.map((tier) => (
-              <Card
-                key={tier.name}
-                className={`p-8 border transition-all ${
-                  tier.featured
-                    ? "border-accent bg-accent/5 ring-2 ring-accent/30"
-                    : "border-accent/10 bg-card/50 hover:border-accent/30"
-                }`}
-              >
-                {tier.featured && (
-                  <div className="flex items-center gap-2 mb-4">
-                    <Star className="w-4 h-4 fill-accent text-accent" />
-                    <span className="text-xs font-display text-accent uppercase tracking-widest">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                <h3 className="text-2xl font-display font-bold text-foreground mb-2">
-                  {tier.name}
-                </h3>
-                <p className="text-foreground/60 text-sm mb-6">{tier.period}</p>
-                <p className="text-4xl font-display font-bold text-accent mb-8">
-                  {tier.price}
-                </p>
-                <ul className="space-y-3 mb-8">
-                  {tier.items.map((item) => (
-                    <li key={item} className="text-sm text-foreground/70 flex items-start gap-3">
-                      <span className="text-accent mt-1">•</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  onClick={() => setLocation("/subscribe")}
-                  className={`w-full rounded-sm font-display uppercase tracking-wide ${
-                    tier.featured
-                      ? "bg-accent text-background hover:bg-accent/90"
-                      : "border border-accent/30 text-accent hover:bg-accent/10"
-                  }`}
-                  variant={tier.featured ? "default" : "outline"}
+            <div className="grid md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card
+                  key={i}
+                  className="aspect-square overflow-hidden bg-muted border-accent/10 hover:border-accent/30 transition-all cursor-pointer group"
                 >
-                  Subscribe
-                </Button>
-              </Card>
-            ))}
+                  <img
+                    src={featuredDesigns[i - 1]?.image}
+                    alt={`Feed ${i}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </Card>
+              ))}
+            </div>
+
+            <Button
+              onClick={() => setLocation("/gallery")}
+              className="w-full bg-accent hover:bg-accent/90 text-foreground font-display text-lg px-8 py-6 rounded-sm"
+            >
+              View All Designs
+            </Button>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 border-t border-accent/10">
+      <section className="py-20 px-6 bg-background border-t border-accent/10">
         <div className="container max-w-3xl mx-auto text-center space-y-8">
           <div className="space-y-4">
             <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground">
-              Ready to Transform Your Nails?
+              Ready to Elevate Your Nails?
             </h2>
             <p className="text-lg text-foreground/70">
               Join thousands of customers enjoying salon-quality nail art at home.
@@ -223,16 +185,16 @@ export default function LuxuryHome() {
           <Button
             size="lg"
             onClick={() => setLocation("/subscribe")}
-            className="bg-accent hover:bg-accent/90 text-background font-display text-lg px-12 py-6 rounded-sm"
+            className="bg-accent hover:bg-accent/90 text-foreground font-display text-lg px-12 py-6 rounded-sm"
           >
-            Start Your Subscription
+            Subscribe Now
             <ChevronRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-accent/10 py-12 px-6">
+      <footer className="border-t border-accent/10 py-12 px-6 bg-background">
         <div className="container text-center text-foreground/60 text-sm">
           <p>&copy; 2026 Nail'd. All rights reserved.</p>
         </div>
