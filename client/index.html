@@ -12,13 +12,22 @@
     <meta name="theme-color" content="#f5e6e0" />
     <meta property="og:title" content="Nail'd - Premium Nail Art & Subscription Boxes" />
     <meta property="og:description" content="Shop trending nail wraps, designs, and subscription boxes. Curated collections inspired by TikTok and Instagram. Salon-quality nails at home." />
-    <meta property="og:type" content="website" />    
+    <meta property="og:type" content="website" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/icon_c4635692.png" />    
 
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+          console.log('Service Worker registration failed:', err);
+        });
+      }
+    </script>
     <script
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"
