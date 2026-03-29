@@ -242,12 +242,20 @@ A premium print-on-demand nail art subscription and e-commerce platform featurin
 - [ ] Submit to Google Play Store
 
 ## Phase 20: Build Failure Fix & Production Launch
-- [ ] Diagnose EAS build error from logs
-- [ ] Fix build configuration issues
-- [ ] Rebuild APK with EAS Build
+- [x] Diagnose EAS build error from logs (missing icon/splash files)
+- [x] Fix build configuration issues (created app icons)
+- [ ] Rebuild APK with EAS Build (dependency install issue on EAS servers)
 - [ ] Download and verify signed APK
-- [ ] Activate Stripe live keys
+- [ ] Verify Stripe live keys are active
 - [ ] Configure SendGrid email provider
 - [ ] Test end-to-end payment flow
 - [ ] Test email notifications
 - [ ] Deploy to production domain
+
+## Phase 21: Web Platform Production Launch
+- [ ] Verify Stripe integration working
+- [ ] Set up SendGrid for email notifications
+- [ ] Create production checkpoint
+- [ ] Deploy to production domain
+- [ ] Test full checkout flow
+- [ ] Verify email notifications working
