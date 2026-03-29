@@ -52,27 +52,27 @@ export default function Home() {
   const featuredDesigns = [
     {
       id: 1,
-      name: "Chrome Dreams",
+      name: "Checkmate Nail Wraps",
       category: "Trending",
-      image: "https://via.placeholder.com/300x400?text=Chrome+Dreams",
+      image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/B98P4q7Eu5xg_092370d6.jpg",
     },
     {
       id: 2,
-      name: "Minimalist Chic",
+      name: "3D Blossom Nail Art",
       category: "Elegant",
-      image: "https://via.placeholder.com/300x400?text=Minimalist+Chic",
+      image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/hjPLR7GAeXxS_2f36a687.jpg",
     },
     {
       id: 3,
-      name: "Floral Garden",
+      name: "3D Blossom Collection",
       category: "Nature",
-      image: "https://via.placeholder.com/300x400?text=Floral+Garden",
+      image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/qx6uSZMlysqb_8d98a6c3.jpg",
     },
     {
       id: 4,
-      name: "Glitter Bomb",
+      name: "3D Heart Nail Art",
       category: "Sparkle",
-      image: "https://via.placeholder.com/300x400?text=Glitter+Bomb",
+      image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/lA0O7S1CNf0T_6b494785.jpg",
     },
   ];
 
@@ -95,6 +95,12 @@ export default function Home() {
               className="text-sm font-medium hover:text-accent transition-colors"
             >
               Shop
+            </button>
+            <button
+              onClick={() => setLocation("/studio")}
+              className="text-sm font-medium hover:text-accent transition-colors"
+            >
+              Design Studio
             </button>
             <button
               onClick={() => setLocation("/subscribe")}
