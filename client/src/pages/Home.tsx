@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronRight, Sparkles, Zap, Heart, Crown } from "lucide-react";
@@ -8,6 +9,10 @@ import { getLoginUrl } from "@/const";
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    document.title = "Nail'd - Premium Nail Art & Subscription Boxes";
+  }, []);
 
   const subscriptionTiers = [
     {
