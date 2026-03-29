@@ -2,6 +2,7 @@
   "expo": {
     "name": "Nail'd",
     "slug": "nailed-app",
+    "sdkVersion": "55.0.0",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/icon_c4635692.png",
@@ -37,6 +38,9 @@
       "eas": {
         "projectId": "dad5b5d5-7965-4919-ab70-9dc067cb1545"
       }
+    },
+    "cli": {
+      "appVersionSource": "local"
     }
   }
 }
