@@ -25,7 +25,7 @@ SMTP_PORT = 587
 # Recipient Information
 recipients = [
     {
-        "email": "sales@universalfulfillment.com",
+        "email": "contact@universalfulfillment.com",
         "name": "Universal Fulfillment Team",
         "subject": "Webhook Integration & Pricing Inquiry for Nail'd Subscription Box Service",
         "body": """Hello Universal Fulfillment Team,
@@ -155,7 +155,7 @@ xxearthx@gmail.com
 805-380-7870"""
     },
     {
-        "email": "info@getnimbl.com",
+        "email": "sales@getnimbl.com",
         "name": "Nimbl Team",
         "subject": "Subscription Box & Webhook Integration Inquiry for Nail'd",
         "body": """Hello Nimbl Team,

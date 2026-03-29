@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "Nail'd",
+    "slug": "nailed-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./client/public/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./client/public/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f5e6e0"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTabletMode": true,
+      "bundleIdentifier": "com.nailed.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./client/public/adaptive-icon.png",
+        "backgroundColor": "#f5e6e0"
+      },
+      "package": "com.nailed.app",
+      "permissions": [
+        "INTERNET",
+        "CAMERA",
+        "PHOTO_LIBRARY"
+      ],
+      "versionCode": 1
+    },
+    "web": {
+      "favicon": "./client/public/favicon.ico",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true,
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 24
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_PROJECT_ID_HERE"
+      }
+    }
+  }
+}
