@@ -4,10 +4,10 @@
     "slug": "nailed-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./client/public/icon.png",
+    "icon": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/icon_c4635692.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./client/public/splash.png",
+      "image": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/splash_f6f2c415.png",
       "resizeMode": "contain",
       "backgroundColor": "#f5e6e0"
     },
@@ -20,7 +20,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./client/public/adaptive-icon.png",
+        "foregroundImage": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/adaptive-icon_a78c8a01.png",
         "backgroundColor": "#f5e6e0"
       },
       "package": "com.nailed.app",
