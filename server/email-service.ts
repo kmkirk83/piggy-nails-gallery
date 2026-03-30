@@ -7,6 +7,27 @@ import { notifyOwner } from "./_core/notification";
  */
 
 /**
+ * Email footer with social media links
+ */
+const EMAIL_FOOTER = `
+
+---
+
+📱 Follow Us:
+Instagram: https://instagram.com/nailedofficial
+TikTok: https://tiktok.com/@nailedofficial
+
+© 2026 Nail'd. All rights reserved.
+Support: support@nailed.com`;
+
+/**
+ * Format email content with footer
+ */
+function formatEmailWithFooter(content: string): string {
+  return content + EMAIL_FOOTER;
+}
+
+/**
  * Send order confirmation email
  */
 export async function sendOrderConfirmation(
@@ -37,8 +58,9 @@ You'll receive a shipping notification within 1-2 business days. Track your orde
 Need help? Contact us at support@nailed.com
 
 Best regards,
-The Nail'd Team
-    `.trim();
+The Nail'd Team`.trim();
+
+    const formattedContent = formatEmailWithFooter(content);
 
     // Log email for debugging
     console.log(`[Email] Order confirmation sent to ${email}:`, { orderId, amount });
@@ -93,8 +115,9 @@ Visit your account dashboard to pause, resume, or cancel anytime.
 Questions? We're here to help at support@nailed.com
 
 Best regards,
-The Nail'd Team
-    `.trim();
+The Nail'd Team`.trim();
+
+    const formattedContent = formatEmailWithFooter(content);
 
     console.log(`[Email] Subscription started email sent to ${email}:`, { subscriptionId, planName });
 
@@ -141,8 +164,9 @@ Expect your next shipment within 3-5 business days. Track it in your account das
 Thank you for being part of the Nail'd community!
 
 Best regards,
-The Nail'd Team
-    `.trim();
+The Nail'd Team`.trim();
+
+    const formattedContent = formatEmailWithFooter(content);
 
     console.log(`[Email] Subscription renewal email sent to ${email}:`, { subscriptionId });
 
@@ -185,8 +209,9 @@ Your opinion matters! Tell us why you cancelled at feedback@nailed.com
 We hope to see you again soon!
 
 Best regards,
-The Nail'd Team
-    `.trim();
+The Nail'd Team`.trim();
+
+    const formattedContent = formatEmailWithFooter(content);
 
     console.log(`[Email] Subscription cancelled email sent to ${email}:`, { subscriptionId });
 
@@ -233,8 +258,9 @@ Contact us at support@nailed.com with your order number.
 Thank you for your purchase!
 
 Best regards,
-The Nail'd Team
-    `.trim();
+The Nail'd Team`.trim();
+
+    const formattedContent = formatEmailWithFooter(content);
 
     console.log(`[Email] Shipment ready email sent to ${email}:`, { orderId, trackingNumber });
 
@@ -276,8 +302,9 @@ If you have any questions, please contact us at support@nailed.com
 Thank you for your understanding!
 
 Best regards,
-The Nail'd Team
-    `.trim();
+The Nail'd Team`.trim();
+
+    const formattedContent = formatEmailWithFooter(content);
 
     console.log(`[Email] Refund processed email sent to ${email}:`, { orderId, refundAmount });
 
@@ -324,8 +351,9 @@ Questions? We're here to help at support@nailed.com
 Happy nailing!
 
 Best regards,
-The Nail'd Team
-    `.trim();
+The Nail'd Team`.trim();
+
+    const formattedContent = formatEmailWithFooter(content);
 
     console.log(`[Email] Welcome email sent to ${email}`);
 
