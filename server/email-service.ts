@@ -1,17 +1,10 @@
 import { notifyOwner } from "./_core/notification";
-import { sendEmail } from "./email-config";
 
 /**
  * Email notification service
  * Sends transactional emails for orders, subscriptions, and account events
+ * Uses Manus built-in notification system for owner alerts
  */
-
-export interface EmailNotification {
-  type: "order_confirmation" | "subscription_started" | "subscription_renewed" | "subscription_cancelled" | "shipment_ready" | "refund_processed";
-  recipientEmail: string;
-  recipientName: string;
-  data: Record<string, any>;
-}
 
 /**
  * Send order confirmation email

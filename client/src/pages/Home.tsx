@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ChevronRight, Sparkles, Zap, Heart, Crown } from "lucide-react";
 import { useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
+import { ReviewsSection } from "@/components/ReviewsSection";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -273,6 +274,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Reviews Section */}
+      <ReviewsSection />
 
       {/* Why Nail'd */}
       <section className="py-16 md:py-24">
