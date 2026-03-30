@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Nail'd",
+    "slug": "nailed-app",
+    "sdkVersion": "55.0.0",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/icon_c4635692.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "https://d2xsxph8kpxj0f.cloudfront.net/310519663459203647/dRb95yLqjVJjURAkEbJK85/splash_f6f2c415.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f5e6e0"
+    },
+    "ios": {
+      "supportsTabletMode": true,
+      "bundleIdentifier": "com.nailed.app"
+    },
+    "android": {
+      "package": "com.nailed.app",
+      "permissions": [
+        "INTERNET",
+        "CAMERA"
+      ],
+      "versionCode": 1
+    },
+    "web": {
+      "favicon": "./client/public/favicon.ico"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "dad5b5d5-7965-4919-ab70-9dc067cb1545"
+      }
+    },
+    "cli": {
+      "appVersionSource": "local"
+    }
+  }
+}
