@@ -15,6 +15,7 @@ import Account from "./pages/Account";
 import Admin from "./pages/Admin";
 import Studio from "./pages/Studio";
 import FAQ from "./pages/FAQ";
+import FinancialDashboard from "./pages/FinancialDashboard";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/checkout" component={Checkout} />
       <Route path="/studio" component={Studio} />
       <Route path="/faq" component={FAQ} />
+      <Route path="/financial" component={FinancialDashboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

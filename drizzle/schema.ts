@@ -213,3 +213,56 @@ export const productRatings = mysqlTable("productRatings", {
 
 export type ProductRating = typeof productRatings.$inferSelect;
 export type InsertProductRating = typeof productRatings.$inferInsert;
+
+
+/**
+ * Financial transactions for profit/loss tracking
+ */
+export const transactions = mysqlTable("transactions", {
+  id: int("id").autoincrement().primaryKey(),
+  type: mysqlEnum("type", ["revenue", "cost"]).notNull(),
+  amount: int("amount").notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  orderId: int("orderId"),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Transaction = typeof transactions.$inferSelect;
+export type InsertTransaction = typeof transactions.$inferInsert;
+
+/**
+ * GitHub backups and milestones tracking
+ */
+export const backups = mysqlTable("backups", {
+  id: int("id").autoincrement().primaryKey(),
+  commitHash: varchar("commitHash", { length: 255 }).notNull(),
+  commitMessage: text("commitMessage").notNull(),
+  backupType: varchar("backupType", { length: 50 }).notNull(),
+  fileCount: int("fileCount"),
+  totalSize: int("totalSize"),
+  checksum: varchar("checksum", { length: 255 }),
+  status: mysqlEnum("status", ["success", "failed", "pending"]).default("pending"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Backup = typeof backups.$inferSelect;
+export type InsertBackup = typeof backups.$inferInsert;
+
+/**
+ * Milestone tracking for automation features
+ */
+export const milestones = mysqlTable("milestones", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  status: mysqlEnum("status", ["pending", "in_progress", "completed"]).default("pending"),
+  completedAt: timestamp("completedAt"),
+  metrics: text("metrics"),
+  commitHash: varchar("commitHash", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Milestone = typeof milestones.$inferSelect;
+export type InsertMilestone = typeof milestones.$inferInsert;
