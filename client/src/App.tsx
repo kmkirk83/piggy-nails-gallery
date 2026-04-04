@@ -16,6 +16,8 @@ import Admin from "./pages/Admin";
 import Studio from "./pages/Studio";
 import FAQ from "./pages/FAQ";
 import FinancialDashboard from "./pages/FinancialDashboard";
+import NotificationCenter from "./pages/NotificationCenter";
+import NotificationPreferences from "./pages/NotificationPreferences";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -33,6 +35,8 @@ function Router() {
       <Route path="/studio" component={Studio} />
       <Route path="/faq" component={FAQ} />
       <Route path="/financial" component={FinancialDashboard} />
+      <Route path="/notifications" component={NotificationCenter} />
+      <Route path="/account/notification-preferences" component={NotificationPreferences} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
