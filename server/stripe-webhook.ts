@@ -4,6 +4,8 @@ import { getDb } from "./db";
 import { stripe } from "./stripe-procedures";
 import { orders, subscriptions } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { createOrder, updateOrderStatus, createSubscription, updateSubscriptionStatus, setUserStripeCustomerId } from "./stripe-db";
+import { notifyOwner } from "./_core/notification";
 
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
 
@@ -100,28 +102,42 @@ async function handleCheckoutSessionCompleted(
 
     const userId = parseInt(clientReferenceId);
 
+    // Store Stripe customer ID
+    await setUserStripeCustomerId(userId, customerId);
+    console.log(`[Webhook] Stored Stripe customer ID for user ${userId}`);
+
     // Check if this is a subscription or one-time payment
     if (session.mode === "subscription") {
       console.log(`[Webhook] Subscription created for user ${userId}`);
       // Subscription is automatically created by Stripe
       // We just need to log it
+      await notifyOwner({
+        title: "New Subscription",
+        content: `User ${userId} subscribed to ${metadata.tier || "unknown tier"}`,
+      });
     } else if (session.mode === "payment") {
       // Create order record for one-time purchase
-      const orderData = {
-        userId,
-        stripeSessionId: sessionId,
-        stripeCustomerId: customerId,
-        status: "completed",
-        amount: session.amount_total || 0,
-        currency: session.currency || "usd",
-        productId: metadata.productId || null,
-        metadata: JSON.stringify(metadata),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const amount = session.amount_total || 0;
+      const currency = session.currency || "USD";
 
-      // Insert order (if table exists)
-      console.log(`[Webhook] Order created for user ${userId}:`, orderData);
+      const result = await createOrder(
+        userId,
+        null, // subscriptionId
+        sessionId, // stripeInvoiceId (using session ID as reference)
+        amount,
+        currency
+      );
+
+      console.log(`[Webhook] Order created for user ${userId}:`, {
+        amount,
+        currency,
+        productId: metadata.productId,
+      });
+
+      await notifyOwner({
+        title: "New Order",
+        content: `User ${userId} placed an order for $${(amount / 100).toFixed(2)} ${currency}`,
+      });
     }
   } catch (error) {
     console.error("[Webhook] Error handling checkout.session.completed:", error);
@@ -163,19 +179,44 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, db: any) {
   try {
     const customerId = invoice.customer as string;
     const subscriptionId = (invoice as any).subscription as string;
+    const invoiceId = invoice.id;
+    const amount = invoice.amount_paid;
+    const currency = invoice.currency || "USD";
 
     console.log(`[Webhook] Invoice paid:`, {
-      invoiceId: invoice.id,
+      invoiceId,
       customerId,
       subscriptionId,
-      amount: invoice.amount_paid,
-      currency: invoice.currency,
+      amount,
+      currency,
     });
 
-    // Update subscription status if needed
+    // For subscription invoices, create an order record
     if (subscriptionId) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       console.log(`[Webhook] Subscription status: ${subscription.status}`);
+
+      // Create order for this invoice
+      const userId = subscription.metadata?.userId
+        ? parseInt(subscription.metadata.userId)
+        : null;
+
+      if (userId) {
+        await createOrder(
+          userId,
+          null,
+          invoiceId,
+          amount,
+          currency
+        );
+
+        console.log(`[Webhook] Created order for subscription invoice ${invoiceId}`);
+
+        await notifyOwner({
+          title: "Subscription Payment Received",
+          content: `Subscription invoice ${invoiceId} paid: $${(amount / 100).toFixed(2)} ${currency}`,
+        });
+      }
     }
   } catch (error) {
     console.error("[Webhook] Error handling invoice.paid:", error);
@@ -194,18 +235,37 @@ async function handleSubscriptionUpdated(
   try {
     const customerId = subscription.customer as string;
     const subscriptionId = subscription.id;
+    const status = subscription.status;
+    const currentPeriodStart = new Date(
+      (subscription as any).current_period_start * 1000
+    );
+    const currentPeriodEnd = new Date(
+      (subscription as any).current_period_end * 1000
+    );
 
     console.log(`[Webhook] Subscription updated:`, {
       subscriptionId,
       customerId,
-      status: subscription.status,
+      status,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+      currentPeriodEnd,
     });
+
+    // Update subscription status in database
+    await updateSubscriptionStatus(
+      subscriptionId,
+      status,
+      currentPeriodStart,
+      currentPeriodEnd
+    );
 
     // Log subscription state changes
     if (subscription.cancel_at_period_end) {
       console.log(`[Webhook] Subscription scheduled for cancellation at period end`);
+      await notifyOwner({
+        title: "Subscription Cancellation Scheduled",
+        content: `Subscription ${subscriptionId} will be canceled at period end`,
+      });
     }
   } catch (error) {
     console.error("[Webhook] Error handling customer.subscription.updated:", error);
@@ -224,14 +284,21 @@ async function handleSubscriptionDeleted(
   try {
     const customerId = subscription.customer as string;
     const subscriptionId = subscription.id;
+    const canceledAt = new Date((subscription.canceled_at || 0) * 1000);
 
     console.log(`[Webhook] Subscription deleted:`, {
       subscriptionId,
       customerId,
-      canceledAt: new Date((subscription.canceled_at || 0) * 1000),
+      canceledAt,
     });
 
-    // Additional cleanup can be added here
+    // Update subscription status to canceled
+    await updateSubscriptionStatus(subscriptionId, "canceled");
+
+    await notifyOwner({
+      title: "Subscription Canceled",
+      content: `Subscription ${subscriptionId} has been canceled`,
+    });
   } catch (error) {
     console.error("[Webhook] Error handling customer.subscription.deleted:", error);
     throw error;

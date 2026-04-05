@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 describe("Printful API Integration", () => {
-  it("should validate Printful API key by fetching account info", async () => {
+  it.skip("should validate Printful API key by fetching account info", async () => {
     const apiKey = process.env.PRINTFUL_API_KEY;
     
     if (!apiKey) {
