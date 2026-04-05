@@ -1,0 +1,165 @@
+name: Create Release with APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web app
+        run: pnpm build
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Sync web assets to Capacitor
+        run: pnpm exec capacitor sync android
+
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+
+      - name: Build signed APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          cd android
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=app/release.keystore \
+            -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+
+      - name: Get version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version_number=${VERSION#v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: android/app/build/outputs/apk/release/app-release.apk
+          name: "Nail'd ${{ steps.version.outputs.version }}"
+          body: |
+            # Nail'd APK Release ${{ steps.version.outputs.version }}
+            
+            ## What's New
+            - New features and improvements
+            - Bug fixes and optimizations
+            
+            ## Installation
+            1. Download `app-release.apk` from the assets below
+            2. Enable "Install from Unknown Sources" on your Android device
+            3. Open the APK file and install
+            
+            ## Testing
+            - Test on Android 8.0 and above
+            - Report issues on GitHub
+            
+            ## Upload to Google Play
+            1. Go to Google Play Console
+            2. Select your app
+            3. Go to Release > Production
+            4. Upload this APK
+            5. Fill in release notes and submit
+            
+            ---
+            Built with ❤️ by Nail'd Build System
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send release email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "🚀 Nail'd ${{ steps.version.outputs.version }} Released - Ready for Google Play"
+          to: ${{ secrets.EMAIL_RECIPIENT }}
+          from: "Nail'd Release System <${{ secrets.EMAIL_USER }}>"
+          html_body: |
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white; border-radius: 8px 8px 0 0;">
+                <h1 style="margin: 0; font-size: 24px;">🚀 Nail'd ${{ steps.version.outputs.version }} Released!</h1>
+              </div>
+              
+              <div style="background: #f5f5f5; padding: 20px; border-radius: 0 0 8px 8px;">
+                <p style="color: #333; font-size: 16px;">Your production APK is ready for Google Play Console.</p>
+                
+                <div style="background: white; padding: 15px; border-left: 4px solid #667eea; margin: 20px 0;">
+                  <p><strong>Release Details:</strong></p>
+                  <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Version: <code>${{ steps.version.outputs.version }}</code></li>
+                    <li>Build: <code>${{ github.run_id }}</code></li>
+                    <li>Commit: <code>${{ github.sha }}</code></li>
+                  </ul>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="https://github.com/kmkirk83/piggy-nails-gallery/releases/tag/${{ steps.version.outputs.version }}" style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                    📥 Download APK
+                  </a>
+                </div>
+                
+                <div style="background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                  <p><strong>📋 Next Steps:</strong></p>
+                  <ol style="margin: 10px 0; padding-left: 20px;">
+                    <li>Download the APK from the link above</li>
+                    <li>Test on Android device (optional but recommended)</li>
+                    <li>Go to Google Play Console</li>
+                    <li>Select your app → Release → Production</li>
+                    <li>Upload the APK</li>
+                    <li>Fill in release notes</li>
+                    <li>Submit for review</li>
+                  </ol>
+                </div>
+                
+                <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                  <p><strong>⚠️ Important:</strong></p>
+                  <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>First release may take 24-48 hours for review</li>
+                    <li>Subsequent updates typically review in 2-4 hours</li>
+                    <li>Ensure version code is incremented for each release</li>
+                  </ul>
+                </div>
+                
+                <p style="color: #666; font-size: 12px; margin-top: 30px; text-align: center;">
+                  <a href="https://github.com/kmkirk83/piggy-nails-gallery/releases" style="color: #667eea;">View All Releases</a>
+                </p>
+              </div>
+            </div>
