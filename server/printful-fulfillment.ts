@@ -131,6 +131,7 @@ export const fulfillmentRouter = router({
 
   /**
    * Validate Printful connection
+   * Tests /products and /orders endpoints (working endpoints)
    */
   validateConnection: protectedProcedure.query(async ({ ctx }) => {
     try {
@@ -139,7 +140,8 @@ export const fulfillmentRouter = router({
         throw new Error("Only admins can validate connection");
       }
 
-      const response = await fetch("https://api.printful.com/account", {
+      // Test products endpoint
+      const productsResponse = await fetch("https://api.printful.com/products", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${process.env.PRINTFUL_API_KEY}`,
@@ -147,17 +149,32 @@ export const fulfillmentRouter = router({
         },
       });
 
-      if (response.status === 200) {
-        const data = await response.json();
+      // Test orders endpoint
+      const ordersResponse = await fetch("https://api.printful.com/orders", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${process.env.PRINTFUL_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const productsOk = productsResponse.status === 200;
+      const ordersOk = ordersResponse.status === 200;
+
+      if (productsOk && ordersOk) {
+        const productsData = await productsResponse.json();
         return {
           connected: true,
-          accountId: data.result?.id,
+          productCount: Array.isArray(productsData.result)
+            ? productsData.result.length
+            : 0,
           message: "Printful API connection successful",
         };
       } else {
         return {
           connected: false,
-          status: response.status,
+          productsStatus: productsResponse.status,
+          ordersStatus: ordersResponse.status,
           message: "Printful API connection failed",
         };
       }
@@ -166,6 +183,7 @@ export const fulfillmentRouter = router({
       return {
         connected: false,
         error: error instanceof Error ? error.message : "Unknown error",
+        message: "Connection test encountered an error",
       };
     }
   }),
