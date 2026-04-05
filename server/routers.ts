@@ -11,6 +11,7 @@ import { productsRouter } from "./products-procedures";
 import { fulfillmentRouter } from "./printful-fulfillment";
 import { adminRouter } from "./admin-procedures";
 import { marketingRouter } from "./marketing-procedures";
+import { automationRouter } from "./automation-procedures";
 import { orders } from "../drizzle/schema";
 import { desc, eq, count } from "drizzle-orm";
 import { protectedProcedure } from "./_core/trpc";
@@ -81,6 +82,7 @@ export const appRouter = router({
   admin: adminRouter,
   marketing: marketingRouter,
   orders: ordersRouter,
+  automation: automationRouter,
 
   // TODO: add feature routers here, e.g.
   // todo: router({

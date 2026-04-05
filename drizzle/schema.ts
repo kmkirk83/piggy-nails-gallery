@@ -360,6 +360,24 @@ export type InsertNotification = typeof notifications.$inferInsert;
 /**
  * User notification preferences
  */
+/**
+ * Products table for nail art inventory
+ */
+export const products = mysqlTable("products", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  price: int("price").notNull(), // Price in cents
+  imageUrl: varchar("imageUrl", { length: 512 }),
+  category: varchar("category", { length: 100 }),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Product = typeof products.$inferSelect;
+export type InsertProduct = typeof products.$inferInsert;
+
 export const notificationPreferences = mysqlTable("notificationPreferences", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull().unique(),

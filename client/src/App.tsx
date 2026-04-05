@@ -23,6 +23,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import SocialMediaSetup from "./pages/SocialMediaSetup";
 import MarketingDashboard from "./pages/MarketingDashboard";
 import OrderTracking from "./pages/OrderTracking";
+import MonitoringDashboard from "./pages/MonitoringDashboard";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/social-media-setup" component={SocialMediaSetup} />
       <Route path="/marketing" component={MarketingDashboard} />
       <Route path="/orders" component={OrderTracking} />
+      <Route path="/monitoring" component={MonitoringDashboard} />
       <Route path="/subscribe" component={Subscribe} />
       <Route path="/subscriptions" component={Subscriptions} />
       <Route path="/checkout" component={Checkout} />

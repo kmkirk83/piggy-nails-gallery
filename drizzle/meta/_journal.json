@@ -50,6 +50,13 @@
       "when": 1775370965900,
       "tag": "0006_charming_harry_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1775416367616,
+      "tag": "0007_regular_riptide",
+      "breakpoints": true
     }
   ]
 }
