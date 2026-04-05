@@ -9,6 +9,7 @@ import { designRouter } from "./design-procedures";
 import { notificationRouter } from "./notification-procedures";
 import { productsRouter } from "./products-procedures";
 import { fulfillmentRouter } from "./printful-fulfillment";
+import { adminRouter } from "./admin-procedures";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -28,6 +29,7 @@ export const appRouter = router({
   notifications: notificationRouter,
   products: productsRouter,
   fulfillment: fulfillmentRouter,
+  admin: adminRouter,
 
   // TODO: add feature routers here, e.g.
   // todo: router({
