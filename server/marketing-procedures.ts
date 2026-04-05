@@ -406,6 +406,55 @@ export const marketingRouter = router({
     }),
 
   /**
+   * Generate AI caption and hashtags
+   */
+  generateCaption: protectedProcedure
+    .input(z.object({ content: z.string() }))
+    .mutation(async ({ input }) => {
+      try {
+        const { invokeLLM } = await import("./_core/llm");
+
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: "You are a social media expert. Generate engaging captions and relevant hashtags for nail art posts. Return JSON with 'caption' and 'hashtags' array.",
+            },
+            {
+              role: "user",
+              content: `Create a caption and hashtags for this nail art post: ${input.content}`,
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "caption_generation",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  caption: { type: "string" },
+                  hashtags: { type: "array", items: { type: "string" } },
+                },
+                required: ["caption", "hashtags"],
+              },
+            },
+          },
+        });
+
+        const responseContent = response.choices[0]?.message?.content;
+        if (!responseContent) throw new Error("No response from LLM");
+
+        const contentStr = typeof responseContent === "string" ? responseContent : JSON.stringify(responseContent);
+        const parsed = JSON.parse(contentStr);
+        return { caption: parsed.caption, hashtags: parsed.hashtags };
+      } catch (error) {
+        console.error("[Marketing] Error generating caption:", error);
+        throw error;
+      }
+    }),
+
+  /**
    * Get user's connected social media accounts
    */
   getSocialAccounts: protectedProcedure.query(async ({ ctx }) => {
