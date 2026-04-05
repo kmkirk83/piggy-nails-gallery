@@ -20,6 +20,7 @@ import NotificationCenter from "./pages/NotificationCenter";
 import NotificationPreferences from "./pages/NotificationPreferences";
 import Products from "./pages/Products";
 import AdminDashboard from "./pages/AdminDashboard";
+import SocialMediaSetup from "./pages/SocialMediaSetup";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/account" component={Account} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
+      <Route path="/social-media-setup" component={SocialMediaSetup} />
       <Route path="/subscribe" component={Subscribe} />
       <Route path="/subscriptions" component={Subscriptions} />
       <Route path="/checkout" component={Checkout} />

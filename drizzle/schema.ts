@@ -79,6 +79,75 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
 
 /**
+ * Social media posts and campaigns
+ */
+export const socialMediaPosts = mysqlTable("socialMediaPosts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  imageUrl: text("imageUrl"),
+  videoUrl: text("videoUrl"),
+  platforms: varchar("platforms", { length: 255 }).notNull(), // JSON: ["instagram", "tiktok", "facebook"]
+  scheduledAt: timestamp("scheduledAt"),
+  publishedAt: timestamp("publishedAt"),
+  status: varchar("status", { length: 50 }).default("draft"), // draft, scheduled, published, failed
+  hashtags: text("hashtags"), // JSON array
+  caption: text("caption"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SocialMediaPost = typeof socialMediaPosts.$inferSelect;
+export type InsertSocialMediaPost = typeof socialMediaPosts.$inferInsert;
+
+/**
+ * Social media metrics and analytics
+ */
+export const socialMediaMetrics = mysqlTable("socialMediaMetrics", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  platform: varchar("platform", { length: 50 }).notNull(), // instagram, tiktok, facebook
+  externalPostId: varchar("externalPostId", { length: 255 }),
+  likes: int("likes").default(0),
+  comments: int("comments").default(0),
+  shares: int("shares").default(0),
+  views: int("views").default(0),
+  impressions: int("impressions").default(0),
+  clicks: int("clicks").default(0),
+  saves: int("saves").default(0),
+  engagement: int("engagement").default(0), // calculated: (likes + comments + shares) / impressions * 100
+  reachCount: int("reachCount").default(0),
+  followerGrowth: int("followerGrowth").default(0),
+  lastUpdated: timestamp("lastUpdated").defaultNow(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SocialMediaMetric = typeof socialMediaMetrics.$inferSelect;
+export type InsertSocialMediaMetric = typeof socialMediaMetrics.$inferInsert;
+
+/**
+ * Social media account connections
+ */
+export const socialMediaAccounts = mysqlTable("socialMediaAccounts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  platform: varchar("platform", { length: 50 }).notNull(), // instagram, tiktok, facebook
+  accountName: varchar("accountName", { length: 255 }).notNull(),
+  accessToken: text("accessToken"), // encrypted
+  refreshToken: text("refreshToken"), // encrypted
+  externalAccountId: varchar("externalAccountId", { length: 255 }),
+  followers: int("followers").default(0),
+  isConnected: int("isConnected").default(1),
+  connectedAt: timestamp("connectedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SocialMediaAccount = typeof socialMediaAccounts.$inferSelect;
+export type InsertSocialMediaAccount = typeof socialMediaAccounts.$inferInsert;
+
+/**
  * User-created nail art designs
  */
 export const nailDesigns = mysqlTable("nailDesigns", {
