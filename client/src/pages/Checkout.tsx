@@ -2,10 +2,18 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, Loader2, Sparkles } from "lucide-react";
+import { ChevronLeft, Loader2, Sparkles, Lock } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { getLoginUrl } from "@/const";
+import { Capacitor } from "@capacitor/core";
+
+const PRODUCTION_URL = 'https://naild.manus.space';
+
+// Use production URL as origin in Capacitor so Stripe can redirect back correctly
+const getCheckoutOrigin = () =>
+  Capacitor.isNativePlatform() ? PRODUCTION_URL : window.location.origin;
 
 interface Product {
   id: string;
@@ -26,14 +34,14 @@ export default function Checkout() {
 
   const createCheckoutMutation = trpc.stripe.createCheckoutSession.useMutation();
   const getProductQuery = trpc.stripe.getProduct.useQuery(selectedProductId || "", {
-    enabled: !!selectedProductId,
+    enabled: !!selectedProductId && isAuthenticated,
   });
 
   useEffect(() => {
     // Parse product ID from URL
     const params = new URLSearchParams(search);
     const productId = params.get("product") || params.get("tier");
-    
+
     // Map old tier names to new product IDs
     const tierMap: Record<string, string> = {
       monthly: "starter-monthly",
@@ -54,20 +62,34 @@ export default function Checkout() {
     }
   }, [getProductQuery.data]);
 
+  // Auth gate — shown ONLY at checkout, not during browsing
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle>Sign In Required</CardTitle>
-            <CardDescription>Please sign in to complete your purchase</CardDescription>
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-6 h-6 text-accent" />
+            </div>
+            <CardTitle>Sign In to Complete Your Order</CardTitle>
+            <CardDescription>
+              You're almost there! Sign in to securely complete your purchase.
+              Your cart items will be waiting.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Button
-              className="w-full"
-              onClick={() => setLocation("/")}
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+              onClick={() => { window.location.href = getLoginUrl(); }}
             >
-              Go Back
+              Sign In &amp; Continue
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setLocation("/gallery")}
+            >
+              Keep Browsing
             </Button>
           </CardContent>
         </Card>
@@ -85,7 +107,7 @@ export default function Checkout() {
     try {
       const result = await createCheckoutMutation.mutateAsync({
         productId: selectedProductId,
-        origin: window.location.origin,
+        origin: getCheckoutOrigin(),
       });
 
       if (result.url) {

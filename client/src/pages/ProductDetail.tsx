@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, Loader2, Sparkles, Check } from "lucide-react";
+import { ChevronLeft, Loader2, Sparkles, Check, ShoppingCart } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
+import { useCart } from "@/contexts/CartContext";
 
 interface Product {
   id: string;
@@ -20,18 +19,16 @@ interface Product {
 }
 
 export default function ProductDetail() {
-  const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const { productId } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const { addItem } = useCart();
 
   const getProductQuery = trpc.stripe.getProduct.useQuery(productId || "", {
     enabled: !!productId,
   });
-
-  const createCheckoutMutation = trpc.stripe.createCheckoutSession.useMutation();
 
   useEffect(() => {
     if (getProductQuery.data) {
@@ -39,29 +36,25 @@ export default function ProductDetail() {
     }
   }, [getProductQuery.data]);
 
+  // Add to cart without requiring login — auth gate is at checkout
   const handleAddToCart = async () => {
-    if (!isAuthenticated) {
-      window.location.href = getLoginUrl();
-      return;
-    }
-
     if (!product) return;
 
     setIsLoading(true);
     try {
-      const result = await createCheckoutMutation.mutateAsync({
-        productId: product.id,
-        origin: window.location.origin,
-        quantity,
-      });
-
-      if (result.url) {
-        window.open(result.url, "_blank");
-        toast.success("Opening checkout...");
+      for (let i = 0; i < quantity; i++) {
+        addItem({
+          id: product.id,
+          name: product.name,
+          price: product.price / 100, // price is in cents from API
+          category: product.category,
+        });
       }
+      toast.success(`${product.name} added to cart`);
+      setLocation("/checkout?product=" + product.id);
     } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error("Failed to proceed to checkout");
+      console.error("Cart error:", error);
+      toast.error("Failed to add to cart");
     } finally {
       setIsLoading(false);
     }

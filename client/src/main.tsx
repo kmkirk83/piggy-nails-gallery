@@ -2,11 +2,19 @@ import { trpc } from "@/lib/trpc";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
+import { Capacitor } from "@capacitor/core";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
+
+// Use absolute URL when running inside a Capacitor native app (Android/iOS),
+// since relative URLs like /api/trpc resolve to nothing in the WebView.
+const PRODUCTION_URL = 'https://naild.manus.space';
+const API_BASE = Capacitor.isNativePlatform()
+  ? `${PRODUCTION_URL}/api/trpc`
+  : '/api/trpc';
 
 const queryClient = new QueryClient();
 
@@ -40,7 +48,7 @@ queryClient.getMutationCache().subscribe(event => {
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: API_BASE,
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {

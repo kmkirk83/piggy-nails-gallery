@@ -3,7 +3,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import OfflineBanner from "./components/OfflineBanner";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { CartProvider } from "./contexts/CartContext";
 import Home from "./pages/LuxuryHome";
 import Gallery from "./pages/Gallery";
 import Subscribe from "./pages/Subscribe";
@@ -23,7 +25,7 @@ function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"\\"} component={Home} />
+      <Route path="/" component={Home} />
       <Route path={"/gallery"} component={Gallery} />
       <Route path={"/shop"} component={Shop} />
       <Route path={"/product/:productId"} component={ProductDetail} />
@@ -56,10 +58,13 @@ function App() {
         defaultTheme="light"
         // switchable
       >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <OfflineBanner />
+            <Router />
+          </TooltipProvider>
+        </CartProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

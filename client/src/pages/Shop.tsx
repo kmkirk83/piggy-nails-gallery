@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, ShoppingBag, Sparkles, Heart, Zap } from "lucide-react";
 import { useLocation } from "wouter";
-import { getLoginUrl } from "@/const";
+import CartDrawer from "@/components/CartDrawer";
+import QuickViewModal, { QuickViewProduct } from "@/components/QuickViewModal";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 
 
 
@@ -528,12 +530,14 @@ const products: Product[] = [
 ];
 
 export default function Shop() {
-  const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<
     "all" | "subscription" | "one-time" | "aftercare"
   >("all");
   const [showTrendingOnly, setShowTrendingOnly] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [quickViewProduct, setQuickViewProduct] = useState<QuickViewProduct | null>(null);
+  const { addItem } = useCart();
 
   const categories = [
     { id: "all", label: "All Products", icon: ShoppingBag },
@@ -549,17 +553,37 @@ export default function Shop() {
     return categoryMatch && trendingMatch;
   });
 
+  // No auth required to add to cart — login is only required at checkout
   const handleAddToCart = (product: Product) => {
-    if (!isAuthenticated) {
-      window.location.href = getLoginUrl();
-      return;
-    }
-    // TODO: Implement cart functionality
-    setLocation(`/checkout?product=${product.id}`);
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      imageUrl: product.imageUrl,
+      category: product.category,
+    });
+    toast.success(`${product.name} added to cart`);
+    setCartOpen(true);
   };
+
+  const toQuickView = (p: Product): QuickViewProduct => ({
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    price: p.price,
+    category: p.category,
+    imageUrl: p.imageUrl,
+    features: p.features,
+  });
 
   return (
     <div className="min-h-screen bg-background">
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+      <QuickViewModal
+        product={quickViewProduct}
+        onClose={() => setQuickViewProduct(null)}
+        onOpenCart={() => setCartOpen(true)}
+      />
       {/* Navigation */}
       <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
         <div className="container flex items-center justify-between h-16">
@@ -651,7 +675,8 @@ export default function Shop() {
               {filteredProducts.map((product) => (
                 <Card
                   key={product.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                  className="group overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => setQuickViewProduct(toQuickView(product))}
                 >
                   <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative overflow-hidden">
                     {product.imageUrl ? (
@@ -672,6 +697,12 @@ export default function Shop() {
                     {!product.imageUrl && (
                       <Sparkles className="w-16 h-16 text-accent/30" />
                     )}
+                    {/* Quick View overlay */}
+                    <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="bg-accent text-background text-sm font-medium px-4 py-2 rounded-sm">
+                        Quick View
+                      </span>
+                    </div>
                   </div>
                   <CardHeader>
                     <CardTitle className="text-lg">{product.name}</CardTitle>
@@ -695,7 +726,7 @@ export default function Shop() {
                     )}
                     <Button
                       className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-                      onClick={() => handleAddToCart(product)}
+                      onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
                     >
                       {product.category === "subscription"
                         ? "Subscribe"

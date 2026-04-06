@@ -1,14 +1,21 @@
 import { useState } from "react";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, Sparkles, ShoppingCart } from "lucide-react";
 import { useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useCart } from "@/contexts/CartContext";
 
-export default function LuxuryNav() {
+interface LuxuryNavProps {
+  onCartOpen?: () => void;
+}
+
+export default function LuxuryNav({ onCartOpen }: LuxuryNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
+  const { totalItems } = useCart();
 
+  // All browsing routes are public — only Account requires auth
   const navItems = [
     { label: "Shop", path: "/gallery" },
     { label: "Subscriptions", path: "/subscriptions" },
@@ -57,17 +64,34 @@ export default function LuxuryNav() {
             )}
           </div>
 
-          {/* Hamburger Menu Button - Top Right Corner */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden fixed top-6 right-6 z-50 p-2 hover:bg-accent/10 rounded-sm transition-colors"
-          >
-            {isOpen ? (
-              <X className="w-6 h-6 text-accent" />
-            ) : (
-              <Menu className="w-6 h-6 text-foreground" />
-            )}
-          </button>
+          {/* Cart Icon + Hamburger */}
+          <div className="flex items-center gap-2">
+            {/* Cart Button — always visible */}
+            <button
+              onClick={onCartOpen}
+              className="relative p-2 hover:bg-accent/10 rounded-sm transition-colors"
+              aria-label="Open cart"
+            >
+              <ShoppingCart className="w-6 h-6 text-foreground" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-background text-xs font-bold flex items-center justify-center leading-none">
+                  {totalItems > 9 ? "9+" : totalItems}
+                </span>
+              )}
+            </button>
+
+            {/* Hamburger Menu Button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="md:hidden p-2 hover:bg-accent/10 rounded-sm transition-colors"
+            >
+              {isOpen ? (
+                <X className="w-6 h-6 text-accent" />
+              ) : (
+                <Menu className="w-6 h-6 text-foreground" />
+              )}
+            </button>
+          </div>
         </div>
       </nav>
 
