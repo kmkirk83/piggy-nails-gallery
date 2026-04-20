@@ -1,1 +1,45 @@
-name: Manus Auto Fix\n\non: [push, pull_request]\n\njobs:\n  auto-fix:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout code\n        uses: actions/checkout@v2\n      - name: Set up Node.js\n        uses: actions/setup-node@v2\n        with:\n          node-version: '14'\n      - name: Install dependencies\n        run: npm install\n      - name: Run Type Checks\n        run: npm run type-check\n      - name: Run Tests\n        run: npm test\n      - name: Invoke Manus AI for Code Repair\n        run: npx manus-ai --fix --path .
+name: Manus Auto Fix
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '22'
+      - name: Install pnpm dependencies
+        run: npm install -g pnpm && pnpm install
+      - name: TypeScript Compilation Check
+        run: pnpm run tsc --noEmit
+      - name: Format Check with Prettier
+        run: pnpm run prettier --check .
+      - name: Build Project
+        run: pnpm run build
+      - name: Run Tests
+        run: pnpm test
+      - name: Auto Fix and Push Changes
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          pnpm run fix
+          git add .
+          git commit -m 'Automatic fixes' || echo 'No changes to commit'
+          git push
+      - name: Create Pull Request for Review
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: 'Automated Fixes'
+          body: 'This PR includes automated fixes.'
+          base: main
+          head: auto-fix
+          draft: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Auto-complete workflow on success
+        if: ${{ success() }}
+        run: echo 'Workflow completed successfully!'
