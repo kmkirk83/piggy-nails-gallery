@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x, 22.x]
     
     steps:
       - uses: actions/checkout@v4
@@ -23,10 +23,12 @@ jobs:
           cache: 'pnpm'
       
       - name: Install pnpm
-        run: npm install -g pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '10'
       
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       
       - name: Lint code
         run: pnpm lint --max-warnings 0
@@ -51,71 +53,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
-      
-      - name: Run Snyk security scan
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
-
-  deploy-staging:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Deploy to staging
-        run: |
-          echo "Deploying to staging environment..."
-          # Add your staging deployment commands here
-        env:
-          STAGING_URL: ${{ secrets.STAGING_URL }}
-          STAGING_API_KEY: ${{ secrets.STAGING_API_KEY }}
-
-  deploy-production:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-      - uses: actions/checkout@v4
-      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: '22'
           cache: 'pnpm'
       
       - name: Install pnpm
-        run: npm install -g pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '10'
       
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       
-      - name: Build production
-        run: pnpm build:prod
-      
-      - name: Deploy to production
-        run: |
-          echo "Deploying to production..."
-          # Add your production deployment commands here
-        env:
-          PROD_URL: ${{ secrets.PROD_URL }}
-          PROD_API_KEY: ${{ secrets.PROD_API_KEY }}
-      
-      - name: Notify deployment
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '✅ Production deployment complete!'
-            })
+      - name: Run npm audit
+        run: pnpm audit --audit-level=moderate
+        continue-on-error: true
