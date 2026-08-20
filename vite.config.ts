@@ -167,6 +167,14 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "charts-vendor": ["recharts"],
+          "api-vendor": ["@trpc/client", "@trpc/react-query", "zod", "superjson"],
+        },
+      },
+    },
   },
   server: {
     host: true,

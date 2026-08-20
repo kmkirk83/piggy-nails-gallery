@@ -1,262 +1,299 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "./db";
 import { stripe } from "./stripe-procedures";
-import { orders, subscriptions } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { orders, subscriptions, webhookDeliveries } from "../drizzle/schema";
+import {
+  extractFulfillmentLines,
+  parseStoredShippingAddress,
+  queueFulfillment,
+} from "./fulfillment-service";
 
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
+type Db = NonNullable<Awaited<ReturnType<typeof getDb>>>;
+
+type ShippingAddress = {
+  name?: string | null;
+  address1?: string | null;
+  address2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  countryCode?: string | null;
+  phone?: string | null;
+  email?: string | null;
+};
+
+function stringifyMetadata(metadata: Stripe.Metadata | null | undefined) {
+  return Object.fromEntries(Object.entries(metadata || {}).map(([key, value]) => [key, value || ""]));
+}
+
+function getShippingAddress(session: Stripe.Checkout.Session): ShippingAddress | null {
+  const details = (session as any).shipping_details || session.customer_details;
+  const address = details?.address;
+  if (!address) return null;
+  return {
+    name: details.name || null,
+    address1: address.line1 || null,
+    address2: address.line2 || null,
+    city: address.city || null,
+    state: address.state || null,
+    postalCode: address.postal_code || null,
+    country: address.country || null,
+    countryCode: address.country || null,
+    phone: details.phone || null,
+    email: session.customer_details?.email || null,
+  };
+}
+
+async function deliveryAlreadyProcessed(db: Db, event: Stripe.Event) {
+  const prior = await db.select().from(webhookDeliveries)
+    .where(and(eq(webhookDeliveries.provider, "stripe"), eq(webhookDeliveries.externalEventId, event.id)))
+    .limit(1);
+  return Boolean(prior[0]);
+}
+
+async function beginDelivery(db: Db, event: Stripe.Event) {
+  await db.insert(webhookDeliveries).values({
+    provider: "stripe",
+    externalEventId: event.id,
+    eventType: event.type,
+    signatureVerified: true,
+    processingStatus: "received",
+    payload: JSON.stringify(event),
+  });
+}
+
+async function finishDelivery(db: Db, event: Stripe.Event, errorMessage?: string) {
+  await db.update(webhookDeliveries).set({
+    processingStatus: errorMessage ? "failed" : "processed",
+    errorMessage: errorMessage || null,
+    processedAt: new Date(),
+  }).where(and(eq(webhookDeliveries.provider, "stripe"), eq(webhookDeliveries.externalEventId, event.id)));
+}
+
+async function createOrderAndQueue(
+  db: Db,
+  input: {
+    userId: number;
+    subscriptionId?: number | null;
+    stripeSessionId?: string | null;
+    stripeInvoiceId?: string | null;
+    stripeCustomerId?: string | null;
+    productId: string | null;
+    amount: number;
+    currency: string;
+    metadata: Record<string, string>;
+    shippingAddress: ShippingAddress | null;
+  }
+) {
+  if (input.stripeSessionId) {
+    const existing = await db.select().from(orders).where(eq(orders.stripeSessionId, input.stripeSessionId)).limit(1);
+    if (existing[0]) return existing[0];
+  }
+
+  if (input.stripeInvoiceId) {
+    const existing = await db.select().from(orders).where(eq(orders.stripeInvoiceId, input.stripeInvoiceId)).limit(1);
+    if (existing[0]) return existing[0];
+  }
+
+  const insertResult = await db.insert(orders).values({
+    userId: input.userId,
+    subscriptionId: input.subscriptionId || null,
+    stripeSessionId: input.stripeSessionId || null,
+    stripeInvoiceId: input.stripeInvoiceId || null,
+    stripeCustomerId: input.stripeCustomerId || null,
+    productId: input.productId,
+    status: "pending",
+    amount: input.amount,
+    currency: input.currency.toUpperCase(),
+    shippingAddress: input.shippingAddress ? JSON.stringify(input.shippingAddress) : null,
+    metadata: JSON.stringify(input.metadata),
+  });
+  const orderId = Number(insertResult[0].insertId);
+
+  await queueFulfillment(db, {
+    orderId,
+    userId: input.userId,
+    amount: input.amount,
+    currency: input.currency,
+    shippingAddress: input.shippingAddress,
+    lines: extractFulfillmentLines(input.productId, input.metadata),
+  });
+
+  const created = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+  return created[0];
+}
+
+async function upsertSubscriptionFromCheckout(db: Db, session: Stripe.Checkout.Session, userId: number, metadata: Record<string, string>) {
+  const stripeSubscriptionId = typeof session.subscription === "string"
+    ? session.subscription
+    : session.subscription?.id;
+  if (!stripeSubscriptionId) return null;
+
+  const existing = await db.select().from(subscriptions)
+    .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId))
+    .limit(1);
+  if (existing[0]) return existing[0];
+
+  const insertResult = await db.insert(subscriptions).values({
+    userId,
+    stripeSubscriptionId,
+    tier: metadata.productId || "custom-box",
+    status: "active",
+    selectionMode: metadata.subscriptionBoxMode || "seasonal",
+    seasonalOptIn: metadata.seasonalOptIn === "true",
+    boxPreferences: JSON.stringify({
+      selectedProductIds: (() => {
+        try { return JSON.parse(metadata.selectedProductIds || "[]"); } catch { return []; }
+      })(),
+      createdFrom: "stripe-checkout",
+    }),
+  });
+  const localId = Number(insertResult[0].insertId);
+  const created = await db.select().from(subscriptions).where(eq(subscriptions.id, localId)).limit(1);
+  return created[0] || null;
+}
 
 /**
- * Handle Stripe webhook events
- * This endpoint processes payment confirmations, subscription updates, and customer events
+ * Handle Stripe payment events. The raw request body is registered before JSON parsing
+ * by the Express bootstrap so Stripe signature verification remains valid.
  */
 export async function handleStripeWebhook(req: Request, res: Response) {
-  const sig = req.headers["stripe-signature"] as string;
-
-  if (!sig) {
-    console.error("[Webhook] Missing stripe-signature header");
-    return res.status(400).json({ error: "Missing stripe-signature header" });
-  }
+  const signature = req.headers["stripe-signature"] as string | undefined;
+  if (!signature) return res.status(400).json({ error: "Missing stripe-signature header" });
+  if (!WEBHOOK_SECRET) return res.status(503).json({ error: "Stripe webhook is not configured" });
 
   let event: Stripe.Event;
-
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, WEBHOOK_SECRET);
-  } catch (err: any) {
-    console.error("[Webhook] Signature verification failed:", err.message);
-    return res.status(400).json({ error: `Webhook Error: ${err.message}` });
+    event = stripe.webhooks.constructEvent(req.body, signature, WEBHOOK_SECRET);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown signature error";
+    return res.status(400).json({ error: `Webhook signature verification failed: ${message}` });
   }
 
-  // Handle test events
-  if (event.id.startsWith("evt_test_")) {
-    console.log("[Webhook] Test event detected, returning verification response");
-    return res.json({ verified: true });
-  }
-
-  console.log(`[Webhook] Processing event: ${event.type} (${event.id})`);
+  const db = await getDb();
+  if (!db) return res.status(503).json({ error: "Database unavailable" });
+  if (await deliveryAlreadyProcessed(db, event)) return res.status(200).json({ received: true, duplicate: true });
 
   try {
-    const db = await getDb();
-    if (!db) {
-      console.error("[Webhook] Database not available");
-      return res.status(500).json({ error: "Database unavailable" });
-    }
+    await beginDelivery(db, event);
 
     switch (event.type) {
       case "checkout.session.completed":
         await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, db);
         break;
-
-      case "payment_intent.succeeded":
-        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent, db);
-        break;
-
       case "invoice.paid":
         await handleInvoicePaid(event.data.object as Stripe.Invoice, db);
         break;
-
       case "customer.subscription.updated":
         await handleSubscriptionUpdated(event.data.object as Stripe.Subscription, db);
         break;
-
       case "customer.subscription.deleted":
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, db);
         break;
-
       case "charge.refunded":
         await handleChargeRefunded(event.data.object as Stripe.Charge, db);
         break;
-
       default:
-        console.log(`[Webhook] Unhandled event type: ${event.type}`);
+        console.info(`[Stripe webhook] Received non-commerce event ${event.type}`);
     }
 
-    res.json({ received: true });
+    await finishDelivery(db, event);
+    return res.status(200).json({ received: true });
   } catch (error) {
-    console.error("[Webhook] Error processing event:", error);
-    res.status(500).json({ error: "Internal server error" });
+    const message = error instanceof Error ? error.message : "Unknown webhook processing error";
+    console.error("[Stripe webhook] Processing failed", { eventId: event.id, eventType: event.type, message });
+    await finishDelivery(db, event, message);
+    return res.status(500).json({ error: "Webhook processing failed" });
   }
 }
 
-/**
- * Handle checkout.session.completed
- * Creates an order record when checkout is completed
- */
-async function handleCheckoutSessionCompleted(
-  session: Stripe.Checkout.Session,
-  db: any
-) {
-  try {
-    const clientReferenceId = session.client_reference_id;
-    const customerId = session.customer as string;
-    const sessionId = session.id;
-    const metadata = session.metadata || {};
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, db: Db) {
+  const userId = Number(session.client_reference_id);
+  if (!Number.isInteger(userId) || userId <= 0) throw new Error("Checkout session is missing a valid client reference.");
 
-    if (!clientReferenceId) {
-      console.error("[Webhook] Missing client_reference_id in checkout session");
-      return;
-    }
+  const metadata = stringifyMetadata(session.metadata);
+  const productId = metadata.productId || null;
+  const shippingAddress = getShippingAddress(session);
+  const localSubscription = session.mode === "subscription"
+    ? await upsertSubscriptionFromCheckout(db, session, userId, metadata)
+    : null;
 
-    const userId = parseInt(clientReferenceId);
-
-    // Check if this is a subscription or one-time payment
-    if (session.mode === "subscription") {
-      console.log(`[Webhook] Subscription created for user ${userId}`);
-      // Subscription is automatically created by Stripe
-      // We just need to log it
-    } else if (session.mode === "payment") {
-      // Create order record for one-time purchase
-      const orderData = {
-        userId,
-        stripeSessionId: sessionId,
-        stripeCustomerId: customerId,
-        status: "completed",
-        amount: session.amount_total || 0,
-        currency: session.currency || "usd",
-        productId: metadata.productId || null,
-        metadata: JSON.stringify(metadata),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      // Insert order (if table exists)
-      console.log(`[Webhook] Order created for user ${userId}:`, orderData);
-    }
-  } catch (error) {
-    console.error("[Webhook] Error handling checkout.session.completed:", error);
-    throw error;
-  }
+  await createOrderAndQueue(db, {
+    userId,
+    subscriptionId: localSubscription?.id || null,
+    stripeSessionId: session.id,
+    stripeCustomerId: typeof session.customer === "string" ? session.customer : null,
+    productId,
+    amount: session.amount_total || 0,
+    currency: session.currency || "usd",
+    metadata,
+    shippingAddress,
+  });
 }
 
-/**
- * Handle payment_intent.succeeded
- * Confirms payment was successful
- */
-async function handlePaymentIntentSucceeded(
-  paymentIntent: Stripe.PaymentIntent,
-  db: any
-) {
-  try {
-    const metadata = paymentIntent.metadata || {};
-    const userId = metadata.userId ? parseInt(metadata.userId) : null;
+async function handleInvoicePaid(invoice: Stripe.Invoice, db: Db) {
+  // The initial subscription order is created from checkout.session.completed. The
+  // corresponding first invoice is an accounting confirmation, not a second shipment.
+  if ((invoice as any).billing_reason === "subscription_create") return;
 
-    console.log(`[Webhook] Payment succeeded for user ${userId}:`, {
-      amount: paymentIntent.amount,
-      currency: paymentIntent.currency,
-      status: paymentIntent.status,
-    });
+  const stripeSubscriptionId = (invoice as any).subscription as string | null;
+  if (!stripeSubscriptionId) return;
 
-    // Additional processing can be added here
-    // e.g., send confirmation email, update inventory, etc.
-  } catch (error) {
-    console.error("[Webhook] Error handling payment_intent.succeeded:", error);
-    throw error;
+  const localSubscription = await db.select().from(subscriptions)
+    .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId))
+    .limit(1);
+  const subscription = localSubscription[0];
+  if (!subscription) {
+    console.warn("[Stripe webhook] Received an invoice for an unknown subscription", { stripeSubscriptionId });
+    return;
   }
+
+  const stripeSubscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+  const metadata = stringifyMetadata(stripeSubscription.metadata);
+  const priorOrders = await db.select().from(orders).where(eq(orders.subscriptionId, subscription.id)).limit(1);
+  const shippingAddress = parseStoredShippingAddress(priorOrders[0]?.shippingAddress || null);
+
+  await createOrderAndQueue(db, {
+    userId: subscription.userId,
+    subscriptionId: subscription.id,
+    stripeInvoiceId: invoice.id,
+    stripeCustomerId: typeof invoice.customer === "string" ? invoice.customer : null,
+    productId: metadata.productId || subscription.tier,
+    amount: invoice.amount_paid,
+    currency: invoice.currency || "usd",
+    metadata: {
+      ...metadata,
+      selectedProductIds: metadata.selectedProductIds || JSON.stringify((() => {
+        try { return JSON.parse(subscription.boxPreferences || "{}").selectedProductIds || []; } catch { return []; }
+      })()),
+    },
+    shippingAddress,
+  });
 }
 
-/**
- * Handle invoice.paid
- * Confirms subscription payment was successful
- */
-async function handleInvoicePaid(invoice: Stripe.Invoice, db: any) {
-  try {
-    const customerId = invoice.customer as string;
-    const subscriptionId = (invoice as any).subscription as string;
-
-    console.log(`[Webhook] Invoice paid:`, {
-      invoiceId: invoice.id,
-      customerId,
-      subscriptionId,
-      amount: invoice.amount_paid,
-      currency: invoice.currency,
-    });
-
-    // Update subscription status if needed
-    if (subscriptionId) {
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      console.log(`[Webhook] Subscription status: ${subscription.status}`);
-    }
-  } catch (error) {
-    console.error("[Webhook] Error handling invoice.paid:", error);
-    throw error;
-  }
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription, db: Db) {
+  await db.update(subscriptions).set({
+    status: subscription.status,
+    canceledAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
+  }).where(eq(subscriptions.stripeSubscriptionId, subscription.id));
 }
 
-/**
- * Handle customer.subscription.updated
- * Handles subscription changes (pause, resume, plan changes)
- */
-async function handleSubscriptionUpdated(
-  subscription: Stripe.Subscription,
-  db: any
-) {
-  try {
-    const customerId = subscription.customer as string;
-    const subscriptionId = subscription.id;
-
-    console.log(`[Webhook] Subscription updated:`, {
-      subscriptionId,
-      customerId,
-      status: subscription.status,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
-    });
-
-    // Log subscription state changes
-    if (subscription.cancel_at_period_end) {
-      console.log(`[Webhook] Subscription scheduled for cancellation at period end`);
-    }
-  } catch (error) {
-    console.error("[Webhook] Error handling customer.subscription.updated:", error);
-    throw error;
-  }
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription, db: Db) {
+  await db.update(subscriptions).set({
+    status: "canceled",
+    canceledAt: new Date((subscription.canceled_at || Math.floor(Date.now() / 1000)) * 1000),
+  }).where(eq(subscriptions.stripeSubscriptionId, subscription.id));
 }
 
-/**
- * Handle customer.subscription.deleted
- * Handles subscription cancellation
- */
-async function handleSubscriptionDeleted(
-  subscription: Stripe.Subscription,
-  db: any
-) {
-  try {
-    const customerId = subscription.customer as string;
-    const subscriptionId = subscription.id;
-
-    console.log(`[Webhook] Subscription deleted:`, {
-      subscriptionId,
-      customerId,
-      canceledAt: new Date((subscription.canceled_at || 0) * 1000),
-    });
-
-    // Additional cleanup can be added here
-  } catch (error) {
-    console.error("[Webhook] Error handling customer.subscription.deleted:", error);
-    throw error;
-  }
-}
-
-/**
- * Handle charge.refunded
- * Handles refunds
- */
-async function handleChargeRefunded(charge: Stripe.Charge, db: any) {
-  try {
-    console.log(`[Webhook] Charge refunded:`, {
-      chargeId: charge.id,
-      amount: charge.amount,
-      currency: charge.currency,
-      refunded: charge.refunded,
-      amountRefunded: charge.amount_refunded,
-    });
-
-    // Log refund for records
-  } catch (error) {
-    console.error("[Webhook] Error handling charge.refunded:", error);
-    throw error;
-  }
+async function handleChargeRefunded(charge: Stripe.Charge, db: Db) {
+  const paymentIntentId = typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+  if (!paymentIntentId) return;
+  await db.update(orders).set({ status: "refunded" })
+    .where(eq(orders.stripeSessionId, paymentIntentId));
 }
 
 export default handleStripeWebhook;

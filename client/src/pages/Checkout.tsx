@@ -8,6 +8,12 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { getLoginUrl } from "@/const";
 import { Capacitor } from "@capacitor/core";
+import {
+  getBoxChoices,
+  getSubscriptionBoxDraft,
+  getSubscriptionPlan,
+  type SubscriptionBoxDraft,
+} from "@/lib/subscription-box";
 
 const PRODUCTION_URL = 'https://naild.manus.space';
 
@@ -30,6 +36,7 @@ export default function Checkout() {
   const search = useSearch();
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
+  const [subscriptionDraft, setSubscriptionDraft] = useState<SubscriptionBoxDraft | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const createCheckoutMutation = trpc.stripe.createCheckoutSession.useMutation();
@@ -54,6 +61,10 @@ export default function Checkout() {
     if (mappedId) {
       setSelectedProductId(mappedId);
     }
+
+    const draft = getSubscriptionBoxDraft();
+    const draftProductId = draft ? getSubscriptionPlan(draft.tierId)?.productId : null;
+    setSubscriptionDraft(params.get("box") && draftProductId === mappedId ? draft : null);
   }, [search]);
 
   useEffect(() => {
@@ -108,6 +119,15 @@ export default function Checkout() {
       const result = await createCheckoutMutation.mutateAsync({
         productId: selectedProductId,
         origin: getCheckoutOrigin(),
+        ...(subscriptionDraft
+          ? {
+              subscriptionBox: {
+                mode: subscriptionDraft.mode,
+                seasonalOptIn: subscriptionDraft.seasonalOptIn,
+                selectedProductIds: subscriptionDraft.selectedProductIds,
+              },
+            }
+          : {}),
       });
 
       if (result.url) {
@@ -202,6 +222,29 @@ export default function Checkout() {
                   </div>
                 </div>
               </div>
+
+              {subscriptionDraft && (
+                <div className="space-y-3 rounded-lg border border-accent/30 bg-accent/5 p-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-accent" />
+                    <h3 className="font-semibold text-foreground">Your box preferences</h3>
+                  </div>
+                  {subscriptionDraft.mode === "seasonal" ? (
+                    <p className="text-sm text-muted-foreground">
+                      Seasonal curation is enabled for this box. You can switch to a custom selection before a future renewal.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      {getBoxChoices(subscriptionDraft.selectedProductIds).map((choice) => (
+                        <li key={choice.id} className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                          {choice.name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
 
               {/* What's Included */}
               {product.features && product.features.length > 0 && (

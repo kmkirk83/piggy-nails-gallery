@@ -39,6 +39,12 @@ export const subscriptions = mysqlTable("subscriptions", {
   tier: varchar("tier", { length: 50 }).notNull(),
   /** Subscription status: active, paused, canceled, past_due */
   status: varchar("status", { length: 50 }).notNull().default("active"),
+  /** Customer-selected box mode: custom selections or seasonal curation */
+  selectionMode: varchar("selectionMode", { length: 32 }).notNull().default("seasonal"),
+  /** Whether the customer has opted into seasonal curation */
+  seasonalOptIn: boolean("seasonalOptIn").notNull().default(false),
+  /** Serialized customer box selections and preference metadata */
+  boxPreferences: text("boxPreferences"),
   /** Current period start date */
   currentPeriodStart: timestamp("currentPeriodStart"),
   /** Current period end date */
@@ -61,6 +67,16 @@ export const orders = mysqlTable("orders", {
   subscriptionId: int("subscriptionId"),
   /** Stripe invoice ID */
   stripeInvoiceId: varchar("stripeInvoiceId", { length: 255 }),
+  /** Stripe checkout session ID for idempotent payment processing */
+  stripeSessionId: varchar("stripeSessionId", { length: 255 }).unique(),
+  /** Stripe customer ID attached to the checkout */
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  /** Primary storefront product ID */
+  productId: varchar("productId", { length: 128 }),
+  /** Serialized line items, subscription selections, and checkout metadata */
+  metadata: text("metadata"),
+  /** Supplier order ID once an order is handed off */
+  supplierOrderId: varchar("supplierOrderId", { length: 255 }),
   /** Order status: pending, processing, shipped, delivered */
   status: varchar("status", { length: 50 }).notNull().default("pending"),
   /** Order amount in cents */
@@ -77,6 +93,105 @@ export const orders = mysqlTable("orders", {
 
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
+
+/**
+ * Approved suppliers and their operating state. Supplier credentials remain server-side
+ * configuration and are never persisted in this table.
+ */
+export const suppliers = mysqlTable("suppliers", {
+  id: int("id").autoincrement().primaryKey(),
+  supplierKey: varchar("supplierKey", { length: 64 }).notNull().unique(),
+  name: varchar("name", { length: 128 }).notNull(),
+  mode: varchar("mode", { length: 32 }).notNull().default("simulation"),
+  isActive: boolean("isActive").notNull().default(false),
+  metadata: text("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Supplier = typeof suppliers.$inferSelect;
+export type InsertSupplier = typeof suppliers.$inferInsert;
+
+/**
+ * Maps each storefront product to a specific supplier variant. No customer order can
+ * be transmitted without an active mapping.
+ */
+export const productSupplierMappings = mysqlTable("productSupplierMappings", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: varchar("productId", { length: 128 }).notNull(),
+  supplierId: int("supplierId").notNull(),
+  supplierProductId: varchar("supplierProductId", { length: 255 }).notNull(),
+  supplierVariantId: varchar("supplierVariantId", { length: 255 }).notNull(),
+  supplierSku: varchar("supplierSku", { length: 255 }).notNull(),
+  unitCostCents: int("unitCostCents"),
+  currency: varchar("currency", { length: 3 }).notNull().default("USD"),
+  isActive: boolean("isActive").notNull().default(false),
+  metadata: text("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProductSupplierMapping = typeof productSupplierMappings.$inferSelect;
+export type InsertProductSupplierMapping = typeof productSupplierMappings.$inferInsert;
+
+/** Customer product selections for a recurring subscription box. */
+export const subscriptionBoxSelections = mysqlTable("subscriptionBoxSelections", {
+  id: int("id").autoincrement().primaryKey(),
+  subscriptionId: int("subscriptionId").notNull(),
+  productId: varchar("productId", { length: 128 }).notNull(),
+  position: int("position").notNull(),
+  selectionSource: varchar("selectionSource", { length: 32 }).notNull().default("custom"),
+  status: varchar("status", { length: 32 }).notNull().default("active"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SubscriptionBoxSelection = typeof subscriptionBoxSelections.$inferSelect;
+export type InsertSubscriptionBoxSelection = typeof subscriptionBoxSelections.$inferInsert;
+
+/**
+ * Idempotent order-submission jobs. In simulation mode jobs are recorded but never
+ * sent to a supplier API.
+ */
+export const fulfillmentJobs = mysqlTable("fulfillmentJobs", {
+  id: int("id").autoincrement().primaryKey(),
+  orderId: int("orderId").notNull(),
+  supplierId: int("supplierId"),
+  mode: varchar("mode", { length: 32 }).notNull().default("simulation"),
+  status: varchar("status", { length: 32 }).notNull().default("queued"),
+  idempotencyKey: varchar("idempotencyKey", { length: 255 }).notNull().unique(),
+  requestPayload: text("requestPayload").notNull(),
+  responsePayload: text("responsePayload"),
+  supplierOrderId: varchar("supplierOrderId", { length: 255 }),
+  errorMessage: text("errorMessage"),
+  attempts: int("attempts").notNull().default(0),
+  processedAt: timestamp("processedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FulfillmentJob = typeof fulfillmentJobs.$inferSelect;
+export type InsertFulfillmentJob = typeof fulfillmentJobs.$inferInsert;
+
+/**
+ * Supplier and payment webhook ledger used to deduplicate deliveries and preserve a
+ * supportable audit trail without logging credentials.
+ */
+export const webhookDeliveries = mysqlTable("webhookDeliveries", {
+  id: int("id").autoincrement().primaryKey(),
+  provider: varchar("provider", { length: 64 }).notNull(),
+  externalEventId: varchar("externalEventId", { length: 255 }).notNull(),
+  eventType: varchar("eventType", { length: 128 }).notNull(),
+  signatureVerified: boolean("signatureVerified").notNull().default(false),
+  processingStatus: varchar("processingStatus", { length: 32 }).notNull().default("received"),
+  payload: text("payload").notNull(),
+  errorMessage: text("errorMessage"),
+  processedAt: timestamp("processedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WebhookDelivery = typeof webhookDeliveries.$inferSelect;
+export type InsertWebhookDelivery = typeof webhookDeliveries.$inferInsert;
 
 /**
  * User-created nail art designs

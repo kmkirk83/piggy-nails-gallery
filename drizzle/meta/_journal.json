@@ -43,6 +43,13 @@
       "when": 1775300542470,
       "tag": "0005_zippy_hardball",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1787216290929,
+      "tag": "0006_nasty_mandarin",
+      "breakpoints": true
     }
   ]
 }

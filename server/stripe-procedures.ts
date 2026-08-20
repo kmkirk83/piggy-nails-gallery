@@ -10,8 +10,9 @@ import {
 } from "./nail-products";
 import { getUserStripeCustomerId, setUserStripeCustomerId, getUserOrders } from "./stripe-db";
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+// Keep module loading safe in test and preview environments. Any real Stripe call still
+// requires STRIPE_SECRET_KEY and will fail at the provider boundary if it is absent.
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_missing_configuration");
 
 /**
  * Stripe subscription and e-commerce router
@@ -75,7 +76,14 @@ export const stripeRouter = router({
       z.object({
         productId: z.string(),
         origin: z.string().url(),
-        quantity: z.number().optional().default(1),
+        quantity: z.number().int().positive().max(10).optional().default(1),
+        subscriptionBox: z
+          .object({
+            mode: z.enum(["custom", "seasonal"]),
+            seasonalOptIn: z.boolean(),
+            selectedProductIds: z.array(z.string().min(1)).max(8),
+          })
+          .optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -166,11 +174,39 @@ export const stripeRouter = router({
           stripePriceId = price.id;
         }
 
+        if (product.category !== "subscription" && input.subscriptionBox) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Box preferences can only be attached to a subscription.",
+          });
+        }
+
+        if (input.subscriptionBox?.mode === "custom" && input.subscriptionBox.selectedProductIds.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Choose at least one item for a custom subscription box.",
+          });
+        }
+
+        const checkoutMetadata = {
+          userId: user.id.toString(),
+          productId: product.id,
+          category: product.category,
+          subscriptionBoxMode: input.subscriptionBox?.mode || "",
+          seasonalOptIn: input.subscriptionBox ? String(input.subscriptionBox.seasonalOptIn) : "",
+          selectedProductIds: input.subscriptionBox ? JSON.stringify(input.subscriptionBox.selectedProductIds) : "[]",
+        };
+
         // Create checkout session
         const sessionParams: Stripe.Checkout.SessionCreateParams = {
           customer: stripeCustomerId,
           mode: product.category === "subscription" ? "subscription" : "payment",
           payment_method_types: ["card"],
+          // The first pilot is limited to the US and Canada until supplier shipping
+          // lanes, costs, and delivery promises are verified for additional regions.
+          shipping_address_collection: {
+            allowed_countries: ["US", "CA"],
+          },
           line_items: [
             {
               price: stripePriceId,
@@ -180,11 +216,10 @@ export const stripeRouter = router({
           success_url: `${input.origin}/account?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${input.origin}/shop`,
           client_reference_id: user.id.toString(),
-          metadata: {
-            userId: user.id.toString(),
-            productId: product.id,
-            category: product.category,
-          },
+          metadata: checkoutMetadata,
+          ...(product.category === "subscription"
+            ? { subscription_data: { metadata: checkoutMetadata } }
+            : {}),
           allow_promotion_codes: true,
         };
 

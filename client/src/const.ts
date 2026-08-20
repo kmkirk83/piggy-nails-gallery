@@ -15,8 +15,15 @@ export const getLoginUrl = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
   const redirectUri = `${getOrigin()}/api/oauth/callback`;
-  const state = btoa(redirectUri);
 
+  // A missing deployment-time OAuth setting must not crash public storefront pages.
+  // The fallback keeps local previews browseable; real deployments must configure both values.
+  if (!oauthPortalUrl || !appId) {
+    console.warn("OAuth is not configured for this environment.");
+    return `${getOrigin()}/?oauth=not-configured`;
+  }
+
+  const state = btoa(redirectUri);
   const url = new URL(`${oauthPortalUrl}/app-auth`);
   url.searchParams.set("appId", appId);
   url.searchParams.set("redirectUri", redirectUri);
