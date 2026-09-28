@@ -9,7 +9,7 @@ on:
 
 env:
   NODE_VERSION: '22'
-  PNPM_VERSION: '10'
+  PNPM_VERSION: '10.4.1'
 
 jobs:
   lint-and-fix:
@@ -24,7 +24,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 📥 Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -35,7 +35,7 @@ jobs:
           cache: 'pnpm'
 
       - name: 📦 Install Dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: ✅ TypeScript Check
         run: pnpm check
